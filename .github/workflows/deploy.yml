@@ -54,9 +54,21 @@ jobs:
       # that one script, so a leaked key cannot open a shell or read anything
       # else on the box.
       - name: Deploy to VPS
+        env:
+          # Via env, not inline `${{ }}`: an inline expansion is interpolated
+          # into the script text, which is script injection.
+          DEPLOY_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
+          # ssh -i wants a *path*. The secret is a multi-line key, so passing it
+          # straight to -i makes ssh treat the whole thing as a filename and
+          # fail with "File name too long" — which only ever happens in CI.
+          key=$(mktemp)
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$key"
+          chmod 600 "$key"
           tar -czf - dist \
-            | ssh -i "${{ secrets.VPS_SSH_KEY }}" \
+            | ssh -i "$key" \
+                -o IdentitiesOnly=yes \
                 -o StrictHostKeyChecking=accept-new \
                 "${{ secrets.VPS_DEPLOY_USER }}@${{ secrets.VPS_HOST }}" \
                 "merstat-deploy deploy $GITHUB_SHA"
