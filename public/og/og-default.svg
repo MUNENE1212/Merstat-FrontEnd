@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="Merstat Development Limited">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#003366"/>
+      <stop offset="1" stop-color="#001f3f"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g fill="#FFC300">
+    <text x="80" y="280" font-family="system-ui,sans-serif" font-size="100" font-weight="800">MERSTAT</text>
+    <text x="80" y="340" font-family="system-ui,sans-serif" font-size="28" font-weight="500" fill="#CEF4EB">Building programs. Measuring change. Sustaining impact.</text>
+    <rect x="80" y="380" width="80" height="6" rx="3"/>
+  </g>
+  <g fill="none" stroke="#FFC300" stroke-width="2" opacity="0.4">
+    <circle cx="950" cy="200" r="100"/>
+    <circle cx="950" cy="200" r="140"/>
+    <circle cx="950" cy="200" r="180"/>
+  </g>
+</svg>

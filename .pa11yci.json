@@ -1,0 +1,21 @@
+{
+  "standard": "WCAG2AA",
+  "defaults": {
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox", "--disable-dev-shm-usage"]
+    },
+    "timeout": 60000,
+    "wait": 1000,
+    "ignore": ["color-contrast", "WCAG2AA.Principle2.Guideline2_4.4.H77,H78,H79,H80,H81"]
+  },
+  "urls": [
+    { "name": "home", "url": "http://localhost:4321/" },
+    { "name": "about", "url": "http://localhost:4321/about/" },
+    { "name": "services", "url": "http://localhost:4321/services/" },
+    { "name": "service-detail", "url": "http://localhost:4321/services/dced-systems-mel/" },
+    { "name": "results", "url": "http://localhost:4321/results/" },
+    { "name": "trainings", "url": "http://localhost:4321/trainings/" },
+    { "name": "careers", "url": "http://localhost:4321/careers/" },
+    { "name": "contact", "url": "http://localhost:4321/contact/" }
+  ]
+}

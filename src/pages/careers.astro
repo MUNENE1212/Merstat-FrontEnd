@@ -1,0 +1,269 @@
+---
+/**
+ * Careers page — open roles + benefits + general application form.
+ * Emits JobPosting JSON-LD for every open role.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import JobCard from '../components/JobCard.astro';
+import CareerForm from '../components/forms/CareerForm.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../utils/site';
+import { breadcrumbJsonLd, jobPostingJsonLd } from '../utils/jsonld';
+
+const jobs = (await getCollection('jobs', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'Careers', url: SITE.url + '/careers/' },
+]);
+
+const jobPostings = jobs.map((j) =>
+  jobPostingJsonLd({
+    title: j.data.title,
+    description: j.data.summary,
+    datePosted: j.data.datePosted,
+    validThrough: j.data.validThrough,
+    employmentType: j.data.type,
+    location: j.data.location,
+    url: `${SITE.url}/careers/#${j.id}`,
+  }),
+);
+const jsonLd = [breadcrumb, ...jobPostings];
+---
+
+<BaseLayout
+  title={`Careers — ${SITE.name}`}
+  description="Join a team that designs programs, delivers results, and strengthens accountability. Open positions across MEL, TPM, climate MRV, jobs and inclusion, health systems, and evaluations."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+      <h1>Join a team that designs programs, delivers results, and strengthens accountability.</h1>
+      <p class="prose">
+        At Merstat you apply systems thinking, rigorous evidence, and practical delivery to create
+        change that lasts.
+      </p>
+      <p style="margin-top: var(--space-5);">
+        <a class="btn btn--primary btn--lg" href="#jobs">Explore opportunities</a>
+        <a class="btn btn--ghost btn--lg" href="#benefits">Why join us</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Why work at Merstat -->
+  <section class="section section--alt" id="benefits">
+    <div class="container">
+      <h2 class="section-title">Why work at Merstat</h2>
+      <div class="grid grid-3 cv-auto">
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-bullseye"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Impact you can see</h3>
+          <p>
+            You help partners design and implement solutions and you measure real outcomes in
+            markets, services, and communities.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-chalkboard-teacher"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Learning by doing</h3>
+          <p>
+            You build DCED-aligned systems, test ideas in the field, and use live dashboards to
+            steer decisions.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-earth-africa"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Global exposure</h3>
+          <p>
+            You collaborate across countries and portfolios in agriculture, WASH, health, inclusive
+            finance, youth employment, and climate.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-handshake"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Inclusive culture</h3>
+          <p>
+            You work in a team that integrates gender equality, disability inclusion, poverty
+            profiling, and climate resilience in everything we do.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-laptop-house"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Flexible delivery</h3>
+          <p>
+            You contribute through full-time roles, project-based assignments, and expert rosters.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-users-gear"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Innovation focus</h3>
+          <p>
+            Dedicated resources and time for research and innovation to explore new technologies.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Open roles -->
+  <section class="section" id="jobs" style="background: rgba(0, 40, 85, 0.5);">
+    <div class="container">
+      <h2 class="section-title">Current openings</h2>
+      <p class="prose" style="text-align: center;">
+        If a role below doesn't match your profile, send a general application and select your
+        talent pool.
+      </p>
+      <div class="cv-auto" style="margin-top: var(--space-6);">
+        {
+          jobs.map((j) => (
+            <JobCard
+              title={j.data.title}
+              badge={j.data.badge}
+              location={j.data.location}
+              team={j.data.team}
+              summary={j.data.summary}
+              href={`#${j.id}`}
+            />
+          ))
+        }
+
+        <article
+          class="glass-card"
+          style="text-align: center; border: 2px dashed var(--color-accent);"
+        >
+          <h3 style="color: var(--color-accent);">General application</h3>
+          <p>If you are a strong fit but do not see an exact match, share your profile.</p>
+          <p><a class="btn btn--ghost" href="#how-to-apply">Apply now</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Detailed role descriptions -->
+  {
+    jobs.map((j) => (
+      <section class="section section--alt" id={j.id}>
+        <div class="container container-narrow">
+          <article class="glass-card">
+            <h2>{j.data.title}</h2>
+            <p>
+              <span class="badge">{j.data.badge}</span>
+              <span class="badge badge--muted">{j.data.team}</span>
+              <span class="badge badge--muted">{j.data.location}</span>
+            </p>
+            <p class="prose">
+              <strong>About the role:</strong> {j.data.summary}
+            </p>
+
+            <div
+              class="grid"
+              style="grid-template-columns: 1fr 1fr; gap: var(--space-6); margin-top: var(--space-4);"
+            >
+              <div>
+                <h3 style="font-size: var(--fs-lg); color: var(--color-accent);">
+                  <i class="fa-solid fa-list-check" aria-hidden="true" /> You will:
+                </h3>
+                <ul role="list" style="padding-left: var(--space-5);">
+                  {j.data.youWill.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h3 style="font-size: var(--fs-lg); color: var(--color-accent);">
+                  <i class="fa-solid fa-gears" aria-hidden="true" /> You bring:
+                </h3>
+                <ul role="list" style="padding-left: var(--space-5);">
+                  {j.data.youBring.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    ))
+  }
+
+  <!-- How to apply -->
+  <section class="section" id="how-to-apply">
+    <div class="container container-narrow">
+      <article class="glass-card">
+        <h2>How to apply</h2>
+        <p class="prose">
+          Use the form below or email your CV and a short note on your talent pool to <a
+            href={`mailto:${SITE.careersEmail}`}>{SITE.careersEmail}</a
+          >. Include location, availability, and whether you prefer full-time or project-based work.
+        </p>
+
+        <h3 style="color: var(--color-accent); margin-top: var(--space-5);">Our hiring process</h3>
+        <ol style="padding-left: var(--space-5);">
+          <li>Apply with your CV and a short note on the talent pool you fit best</li>
+          <li>Shortlist and screening conversation</li>
+          <li>Task or portfolio review for role fit</li>
+          <li>Final conversation and references</li>
+        </ol>
+        <p>
+          We value capability and integrity. We are open to non-linear career paths and strong
+          applied skills.
+        </p>
+
+        <h3 style="color: var(--color-accent); margin-top: var(--space-5);">
+          General application submission
+        </h3>
+        <CareerForm jobs={jobs} />
+
+        <h3 style="color: var(--color-accent); margin-top: var(--space-5);">
+          Inclusion and accessibility
+        </h3>
+        <p>
+          We are an equal-opportunity employer. We welcome applications from women, youth, people
+          with disabilities, and underrepresented groups. If you need a reasonable accommodation
+          during the process, email <a href={`mailto:${SITE.careersEmail}`}>{SITE.careersEmail}</a> and
+          we will support you.
+        </p>
+
+        <h3 style="color: var(--color-accent); margin-top: var(--space-5);">
+          Data protection and fraud notice
+        </h3>
+        <p>
+          We handle your information with care and only for recruitment. We do not charge fees at
+          any stage of the hiring process. Merstat only contacts candidates from <strong
+            >@merstat.org</strong
+          >. Report any suspicious activity to <a href={`mailto:${SITE.careersEmail}`}
+            >{SITE.careersEmail}</a
+          >.
+        </p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  @media (max-width: 700px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

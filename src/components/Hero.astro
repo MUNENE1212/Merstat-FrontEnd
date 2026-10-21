@@ -1,0 +1,119 @@
+---
+/**
+ * <Hero /> — Page-top hero with eyebrow, headline, lead, CTAs.
+ * Optional: small image or pattern on the right.
+ */
+interface Props {
+  eyebrow?: string;
+  headline: string;
+  lead?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  align?: 'left' | 'center';
+}
+
+const { eyebrow, headline, lead, primaryCta, secondaryCta, align = 'center' } = Astro.props;
+---
+
+<section class={`hero hero--${align}`}>
+  <div class="container">
+    <div class="hero-card">
+      {eyebrow && <p class="hero-eyebrow">{eyebrow}</p>}
+      <h1 class="hero-headline">{headline}</h1>
+      {lead && <p class="hero-lead">{lead}</p>}
+      {
+        (primaryCta || secondaryCta) && (
+          <div class="hero-ctas">
+            {primaryCta && (
+              <a class="btn btn--primary btn--lg" href={primaryCta.href}>
+                {primaryCta.label}
+              </a>
+            )}
+            {secondaryCta && (
+              <a class="btn btn--ghost btn--lg" href={secondaryCta.href}>
+                {secondaryCta.label}
+              </a>
+            )}
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    padding: var(--space-9) 0 var(--space-8);
+    text-align: center;
+  }
+
+  /*
+    Dark backdrop card for the hero text. Two goals:
+      1) Guarantee legible contrast against the background image
+         regardless of where the image is bright.
+      2) Give the page a clear "above the fold" focal point.
+    Uses a deep navy with backdrop-filter blur so the card
+    integrates with the page overlay rather than floating on it.
+  */
+  .hero-card {
+    background: rgba(0, 18, 41, 0.78);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    border: 1px solid rgba(255, 195, 0, 0.15);
+    border-radius: var(--radius-xl);
+    padding: var(--space-7) var(--space-6);
+    margin: 0 auto;
+    max-width: 56rem;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .hero-eyebrow {
+    color: var(--color-accent);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    margin-bottom: var(--space-4);
+  }
+  .hero-headline {
+    font-size: var(--fs-5xl);
+    line-height: var(--lh-tight);
+    max-width: 22ch;
+    margin: 0 auto;
+    color: var(--color-accent);
+    text-wrap: balance;
+    text-shadow: var(--shadow-text-strong);
+  }
+  .hero-lead {
+    font-size: var(--fs-lg);
+    line-height: var(--lh-loose);
+    max-width: 60ch;
+    margin: var(--space-5) auto 0;
+    color: #f0faf6;
+  }
+  .hero-ctas {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-top: var(--space-7);
+    flex-wrap: wrap;
+  }
+  .hero--left {
+    text-align: left;
+  }
+  .hero--left .hero-headline {
+    margin-left: 0;
+  }
+  .hero--left .hero-lead {
+    margin-left: 0;
+  }
+  .hero--left .hero-ctas {
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 640px) {
+    .hero-card {
+      padding: var(--space-5) var(--space-4);
+    }
+  }
+</style>

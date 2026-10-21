@@ -1,0 +1,264 @@
+---
+/**
+ * Service detail — Knapsack 7-element template.
+ *   1. Benefit-led headline (heroOutcome)
+ *   2. Empathy intro (empathy)
+ *   3. Outcomes, not features (outcomes)
+ *   4. 3-4 step process (process)
+ *   5. Trust bullets (proof)
+ *   6. FAQ (faqs)
+ *   7. Action-oriented CTA
+ *
+ * Renders content body for the deep body, plus all schema.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { serviceJsonLd, breadcrumbJsonLd, faqJsonLd } from '../../utils/jsonld';
+import { SITE } from '../../utils/site';
+
+export async function getStaticPaths() {
+  const services = await getCollection('services', ({ data }) => !data.draft);
+  return services.map((service) => ({
+    params: { slug: service.id },
+    props: { service },
+  }));
+}
+
+const { service } = Astro.props;
+const { Content } = await render(service);
+const d = service.data;
+
+const serviceJson = serviceJsonLd({
+  name: d.title,
+  description: d.description,
+  slug: service.id,
+});
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'Services', url: SITE.url + '/services/' },
+  { name: d.title, url: `${SITE.url}/services/${service.id}/` },
+]);
+
+const faqJson = d.faqs && d.faqs.length > 0 ? faqJsonLd(d.faqs) : undefined;
+
+const jsonLd = [serviceJson, breadcrumb, faqJson].filter(Boolean);
+---
+
+<BaseLayout title={`${d.title} — ${SITE.shortName}`} description={d.description} jsonLd={jsonLd}>
+  <!-- 1. Benefit-led headline -->
+  <section class="section">
+    <div class="container container-narrow" style="text-align: center;">
+      <p
+        style="color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; font-size: var(--fs-sm);"
+      >
+        <i class={`fa-solid ${d.icon}`} aria-hidden="true"></i>
+        {d.shortTitle}
+      </p>
+      <h1>{d.heroOutcome ?? d.title}</h1>
+      {
+        d.empathy && (
+          <p class="prose" style="margin-top: var(--space-4); font-size: var(--fs-lg);">
+            {d.empathy}
+          </p>
+        )
+      }
+      <p style="margin-top: var(--space-6);">
+        <a class="btn btn--primary btn--lg" href="/contact/?intent=service&service={service.id}"
+          >Book a partner call</a
+        >
+      </p>
+    </div>
+  </section>
+
+  <!-- Body content (Markdown from the collection entry) -->
+  <section class="section section--alt">
+    <div class="container container-narrow">
+      <article class="prose">
+        <Content />
+      </article>
+    </div>
+  </section>
+
+  <!-- 3. Outcomes, not features -->
+  {
+    d.outcomes && d.outcomes.length > 0 && (
+      <section class="section">
+        <div class="container container-narrow">
+          <h2>What you get</h2>
+          <ul class="outcomes-list">
+            {d.outcomes.map((o) => (
+              <li>{o}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 4. Process -->
+  {
+    d.process && d.process.length > 0 && (
+      <section class="section section--alt">
+        <div class="container container-narrow">
+          <h2>How we work</h2>
+          <ol class="process-list">
+            {d.process.map((step, i) => (
+              <li>
+                <span class="process-num" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3>{step.title}</h3>
+                  <p>{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 5. Trust bullets -->
+  {
+    d.proof && d.proof.length > 0 && (
+      <section class="section">
+        <div class="container container-narrow">
+          <h2>Why Merstat</h2>
+          <ul class="proof-list">
+            {d.proof.map((p) => (
+              <li>{p}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 6. FAQ -->
+  {
+    d.faqs && d.faqs.length > 0 && (
+      <section class="section section--alt">
+        <div class="container container-narrow">
+          <h2>Frequently asked questions</h2>
+          <dl class="faq-list">
+            {d.faqs.map((f) => (
+              <details>
+                <summary>{f.question}</summary>
+                <p>{f.answer}</p>
+              </details>
+            ))}
+          </dl>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- 7. CTA -->
+  <section class="section">
+    <div class="container" style="text-align: center;">
+      <article class="glass-card">
+        <h2>Ready to talk?</h2>
+        <p style="max-width: 60ch; margin-inline: auto;">
+          Tell us about your context, your objectives, and your timeline. We will reply within one
+          working day with a proposed approach and a partner call.
+        </p>
+        <p style="margin-top: var(--space-5);">
+          <a class="btn btn--primary btn--lg" href="/contact/?intent=service&service={service.id}"
+            >Book a partner call</a
+          >
+          <a class="btn btn--ghost btn--lg" href="/services/">See all services</a>
+        </p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .outcomes-list,
+  .proof-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-5) 0 0;
+  }
+  .outcomes-list li,
+  .proof-list li {
+    position: relative;
+    padding-left: var(--space-7);
+    margin-bottom: var(--space-3);
+    line-height: var(--lh-loose);
+    font-size: var(--fs-lg);
+  }
+  .outcomes-list li::before {
+    content: '✓';
+    color: var(--color-accent);
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+  }
+  .proof-list li::before {
+    content: '★';
+    color: var(--color-accent);
+    font-weight: 700;
+    position: absolute;
+    left: 0;
+  }
+  .process-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--space-5) 0 0;
+    display: grid;
+    gap: var(--space-5);
+  }
+  .process-list > li {
+    display: grid;
+    grid-template-columns: 48px 1fr;
+    gap: var(--space-4);
+    align-items: start;
+  }
+  .process-num {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-text-inverse);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+  }
+  .faq-list {
+    margin: var(--space-5) 0 0;
+  }
+  .faq-list details {
+    background: var(--color-bg-overlay);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4) var(--space-5);
+    margin-bottom: var(--space-3);
+  }
+  .faq-list summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--color-accent);
+    list-style: none;
+  }
+  .faq-list summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-list summary::after {
+    content: '+';
+    float: right;
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
+  .faq-list details[open] summary::after {
+    content: '−';
+  }
+  .faq-list p {
+    margin-top: var(--space-3);
+    line-height: var(--lh-loose);
+    color: var(--color-text);
+  }
+</style>

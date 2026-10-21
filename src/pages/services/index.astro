@@ -1,0 +1,73 @@
+---
+/**
+ * Services index — every service as a card.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ServiceCard from '../../components/ServiceCard.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../../utils/site';
+import { breadcrumbJsonLd } from '../../utils/jsonld';
+
+const services = (await getCollection('services', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'Services', url: SITE.url + '/services/' },
+]);
+---
+
+<BaseLayout
+  title={`Our services — ${SITE.name}`}
+  description="Merstat is a development partner that designs and delivers programs, provides independent monitoring, and builds advanced evidence systems. We integrate market systems thinking, DCED standards, climate MRV, ESG, jobs measurement, inclusion frameworks, and impact investing tools."
+  jsonLd={breadcrumb}
+>
+  <section class="section">
+    <div class="container">
+      <header style="text-align: center; max-width: 70ch; margin-inline: auto;">
+        <h1>Our professional services</h1>
+        <p class="prose">
+          Merstat is a development partner that designs and delivers programs, provides independent
+          monitoring, and builds advanced evidence systems. We integrate market systems thinking,
+          DCED standards, climate MRV, ESG, jobs measurement, inclusion frameworks, and impact
+          investing tools so partners can move from ideas to implementation and from data to
+          decision.
+        </p>
+      </header>
+
+      <div class="grid grid-2 cv-auto" style="margin-top: var(--space-8);">
+        {
+          services.map((s) => (
+            <ServiceCard
+              title={s.data.title}
+              tagline={s.data.tagline}
+              summary={s.data.summary}
+              icon={s.data.icon}
+              href={`/services/${s.id}/`}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA strip -->
+  <section class="section section--alt">
+    <div class="container" style="text-align: center;">
+      <article class="glass-card">
+        <h2>What you gain</h2>
+        <p style="font-size: var(--fs-lg); max-width: 70ch; margin-inline: auto;">
+          A partner who designs programs you can deliver, builds systems your teams can run, and
+          provides independent oversight you can trust. Evidence becomes a management asset,
+          investments become accountable, and impact becomes sustainable.
+        </p>
+        <p style="margin-top: var(--space-5);">
+          <a class="btn btn--primary btn--lg" href="/contact/">
+            <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Book a partner call
+          </a>
+        </p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>

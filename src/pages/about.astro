@@ -1,0 +1,211 @@
+---
+/**
+ * About page — Who We Are, Mission, Vision, Approach, Values, Where We Work.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import { SITE } from '../utils/site';
+import { breadcrumbJsonLd } from '../utils/jsonld';
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'About', url: SITE.url + '/about/' },
+]);
+---
+
+<BaseLayout
+  title={`About — ${SITE.name}`}
+  description="Merstat is a development partner that designs programs, strengthens systems, and provides independent monitoring. Our mission is to build accountable, inclusive, and climate-smart systems."
+  jsonLd={breadcrumb}
+>
+  <!-- Who we are -->
+  <section class="section">
+    <div class="container">
+      <div
+        class="grid"
+        style="grid-template-columns: 1fr 1fr; gap: var(--space-8); align-items: center;"
+      >
+        <div>
+          <img
+            src="/images/team.svg"
+            alt="Diverse Merstat team collaborating"
+            width="600"
+            height="400"
+            loading="lazy"
+          />
+        </div>
+        <div class="prose">
+          <h1>Who we are</h1>
+          <p>
+            Merstat is a development partner that brings together
+            <span class="highlight"
+              >program design, implementation, independent monitoring, and advanced evidence systems</span
+            >
+            to drive sustainable and inclusive change. We work with governments, development partners,
+            businesses, and communities to design solutions that are impactful today and resilient tomorrow.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission & Vision -->
+  <section class="section section--alt">
+    <div class="container">
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-6);">
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-bullseye"
+            style="font-size: 3rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h2>Our mission</h2>
+          <p>
+            To build accountable, inclusive, and climate-smart systems that generate prosperity for
+            people and enterprises, using innovation, partnerships, and rigorous evidence.
+          </p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-eye"
+            style="font-size: 3rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h2>Our vision</h2>
+          <p>
+            A future where development, investment, and policy decisions are guided by <span
+              class="highlight">credible evidence, inclusive values, and sustainable solutions</span
+            >.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Our approach -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Our approach</h2>
+      <p class="prose" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+        Merstat's approach goes beyond traditional monitoring and evaluation. We integrate:
+      </p>
+      <div class="grid grid-2 cv-auto" style="margin-top: var(--space-7);">
+        <article class="glass-card">
+          <h3>Systems thinking</h3>
+          <p>
+            Applying Market Systems Development (MSD, MSD4E) and Market Systems Resilience (MSR)
+            principles to design scalable and sustainable solutions.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Implementation and program design</h3>
+          <p>
+            Co-creating and piloting models in agriculture, youth employment, WASH, climate, and
+            inclusive finance.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Independent oversight</h3>
+          <p>
+            Delivering trusted third-party monitoring that strengthens donor accountability and
+            community trust.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Innovation in evidence</h3>
+          <p>
+            Climate MRV systems, value-for-money frameworks, jobs measurement frameworks, ESG
+            performance tools, and real-time dashboards.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Capital and impact tracking</h3>
+          <p>
+            Frameworks and tools for capital mobilization, impact investing alignment (including IMP
+            standards), and ESG reporting.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Learning and training</h3>
+          <p>
+            Tailored training on ESG, jobs measurement, MEL, and analytics to build institutional
+            capacity.
+          </p>
+        </article>
+        <article class="glass-card">
+          <h3>Inclusion as standard</h3>
+          <p>
+            Embedding gender equality, poverty reduction, resilience, disability inclusion, and
+            climate adaptation in everything we do.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Values -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Our values</h2>
+      <div class="grid grid-4 cv-auto">
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-shield-halved"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Integrity</h3>
+          <p>Acting with transparency, accountability, and respect.</p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-chart-line"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Rigor</h3>
+          <p>Applying credible methods and high professional standards.</p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-handshake"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Collaboration</h3>
+          <p>Working with clients and communities as partners.</p>
+        </article>
+        <article class="glass-card" style="text-align: center;">
+          <i
+            class="fa-solid fa-lightbulb"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Innovation</h3>
+          <p>Leveraging digital tools, AI, and adaptive learning.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Where we work -->
+  <section class="section">
+    <div class="container" style="text-align: center;">
+      <article class="glass-card">
+        <h2>Where we work</h2>
+        <p style="font-size: var(--fs-lg); max-width: 70ch; margin-inline: auto;">
+          Work has been delivered across <span class="highlight"
+            >East and West Africa, the Horn of Africa, the Middle East, South and Southeast Asia,
+            Europe and North America</span
+          >.
+        </p>
+        <i
+          class="fa-solid fa-earth-africa"
+          style="font-size: 3rem; color: var(--color-accent); margin-top: var(--space-5);"
+          aria-hidden="true"></i>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  @media (max-width: 900px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

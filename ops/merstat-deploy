@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# Merstat release manager — the ONLY thing the GitHub deploy key can run.
+#
+# Installed on the VPS as /usr/local/sbin/merstat-deploy (root:root 0755) and
+# bound to the deploy key in /root/.ssh/authorized_keys:
+#   command="/usr/local/sbin/merstat-deploy",restrict ssh-ed25519 AAAA… merstat-github-deploy
+#
+# Commands (from SSH_ORIGINAL_COMMAND, or argv when run by hand as root):
+#   deploy <40-hex commit sha>   release tarball of dist/ on stdin
+#   rollback                     switch back to the previous release
+#   status                       show the live release and the ones kept
+#
+# Layout:
+#   /var/www/merstat/releases/<utc>-<sha7>/dist   (nginx root target)
+#   /var/www/merstat/current -> releases/<live>/dist
+#   /var/www/merstat/shared/{form-submissions,logs}   (survives releases)
+#
+# Static site, so there is no process to reload — nginx reads through the
+# `current` symlink and picks the new release up on the next request. Unlike
+# the dumuwaks deploy there is no health endpoint; the deploy instead
+# verifies that a known file exists in the unpacked release before switching.
+set -Eeuo pipefail
+umask 022
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+APP=/var/www/merstat
+RELEASES=$APP/releases
+SHARED=$APP/shared
+KEEP=5
+MAX_BYTES=$((50 * 1024 * 1024))
+LOG=/var/log/merstat-deploy.log
+
+log() { printf '[%s] %s\n' "$(date -u +%FT%TZ)" "$*" | tee -a "$LOG" >&2; }
+die() { log "ERROR: $*"; exit 1; }
+
+exec 9>/run/lock/merstat-deploy.lock
+flock -n 9 || die "another deploy is running"
+
+# Releases oldest → newest (names start with a UTC timestamp, so they sort).
+list_releases() { find "$RELEASES" -mindepth 1 -maxdepth 1 -type d -name '[0-9]*-*' -printf '%f\n' | sort; }
+
+live_release() {
+  local link
+  [[ -L $APP/current ]] || die "no live release — deploy one first"
+  link=$(readlink -f "$APP/current")
+  [[ -d $link ]] || die "current symlink dangles: $link"
+  dirname "$link"
+}
+
+# Only switch if the release looks like a real build. Catches an empty or
+# truncated tar before nginx starts serving it.
+is_valid_release() { # $1 = release dir
+  [[ -f $1/dist/index.html && -f $1/dist/404.html && -d $1/dist/_assets ]]
+}
+
+switch_to() { # $1 = release dir
+  is_valid_release "$1" || die "not a usable release: $1"
+  ln -sfn "$1/dist" "$APP/.current.new"
+  mv -Tf "$APP/.current.new" "$APP/current"
+}
+
+cmd_status() {
+  local live
+  # Not via live_release: `set -e` does not survive a command substitution, so a
+  # die() in there would exit only the subshell and status would go on to print
+  # an empty release name as though it were real.
+  if [[ ! -L $APP/current || ! -d $(readlink -f "$APP/current") ]]; then
+    echo "live: none — no release deployed yet"
+    echo "kept:"; list_releases | sed 's/^/  /'
+    return
+  fi
+  live=$(basename "$(dirname "$(readlink -f "$APP/current")")")
+  echo "live: $live ($(cat "$RELEASES/$live/REVISION" 2>/dev/null || echo legacy))"
+  echo "kept:"; list_releases | sed 's/^/  /'
+}
+
+cmd_deploy() {
+  local sha=$1 ts rel tmp
+  [[ $sha =~ ^[0-9a-f]{40}$ ]] || die "expected a 40-char commit sha, got: $sha"
+
+  ts=$(date -u +%Y%m%d%H%M%S)
+  rel=$RELEASES/$ts-${sha:0:7}
+  tmp=$(mktemp -d "$RELEASES/.incoming.XXXXXX")
+  mkdir -p "$tmp/dist"
+
+  # Unpack from stdin, refusing anything implausibly large before writing.
+  tar -xzf - -C "$tmp" 2>/dev/null || die "could not read the release tarball"
+  is_valid_release "$tmp" || die "archive did not contain a valid dist/ (index.html, 404.html, _assets/)"
+
+  echo "$sha" > "$tmp/REVISION"
+  mkdir -p "$SHARED/form-submissions" "$SHARED/logs"
+  chmod 750 "$SHARED/form-submissions"
+
+  # mktemp -d creates 0700 and mv preserves it, which would leave the release
+  # unreadable by nginx's www-data worker — every page would 403. The release
+  # holds only public static files, so world-readable is correct here.
+  chmod 755 "$tmp"
+
+  mv "$tmp" "$rel"
+  switch_to "$rel"
+  log "deployed $rel"
+
+  # Keep the newest KEEP releases.
+  list_releases | tail -n +$((KEEP + 1)) | while read -r old; do
+    [[ $(basename "$rel") == "$old" ]] && continue
+    log "pruning $old"
+    rm -rf "${RELEASES:?}/$old"
+  done
+
+  log "live is now $(basename "$(live_release)")"
+}
+
+cmd_rollback() {
+  local live target
+  live=$(basename "$(live_release)")
+  target=$(list_releases | grep -v "^$live$" | tail -1)
+  [[ -n $target ]] || die "no earlier release to roll back to"
+  switch_to "$RELEASES/$target"
+  log "rolled back to $target"
+}
+
+# sshd runs a forced command with NO argv — it puts the client's requested
+# command in the SSH_ORIGINAL_COMMAND environment variable. A human running this
+# by hand has argv instead. Both must work, and reading only argv means a real
+# GitHub deploy silently falls through to `status` and leaves the old release
+# live while still exiting 0.
+line=${SSH_ORIGINAL_COMMAND:-$*}
+
+# CI invokes `merstat-deploy deploy <sha>`. sshd's forced command ignores the
+# binary name, so it arrives here as an ordinary leading token to strip.
+line=${line#merstat-deploy }
+read -r cmd sha extra <<<"$line"
+[[ -z ${extra:-} ]] || die "unexpected arguments: ${extra}"
+cmd=${cmd:-status}
+
+case "$cmd" in
+  deploy)   cmd_deploy "$sha" ;;
+  rollback) cmd_rollback ;;
+  status)   cmd_status ;;
+  *)        die "usage: merstat-deploy {deploy <sha>|rollback|status}" ;;
+esac

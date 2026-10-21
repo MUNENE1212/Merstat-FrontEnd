@@ -1,0 +1,139 @@
+---
+/**
+ * <SEO /> — Single source of truth for every page's <head>.
+ *
+ * Renders canonical, hreflang, OG, Twitter, JSON-LD, the favicon
+ * family, and Plausible + web-vitals scripts. Pages pass title,
+ * description, image, and an optional JSON-LD object.
+ */
+import { SITE } from '../utils/site';
+import { getLocaleConfig, type Locale } from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  locale?: Locale;
+  alternates?: Array<{ locale: Locale; path: string }>;
+  jsonLd?: unknown;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  image = '/og/og-default.png',
+  imageAlt = SITE.tagline,
+  type = 'website',
+  publishedTime,
+  modifiedTime,
+  locale = 'en',
+  alternates = [],
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const canonicalUrl = Astro.url.href;
+const loc = getLocaleConfig(locale);
+
+const ogImage = image.startsWith('http') ? image : `${SITE.url}${image}`;
+---
+
+<!-- Charset / viewport -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#003366" />
+
+<!-- Title & description -->
+<title>{title}</title>
+<meta name="description" content={description} />
+
+<!-- Canonical & language -->
+<link rel="canonical" href={canonicalUrl} />
+{
+  alternates.map(({ locale: altLocale, path }) => (
+    <link
+      rel="alternate"
+      hreflang={getLocaleConfig(altLocale).htmlLang}
+      href={`${SITE.url}${path}`}
+    />
+  ))
+}
+{
+  alternates.length > 0 && (
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={`${SITE.url}${alternates.find((a) => a.locale === 'en')?.path ?? '/'}`}
+    />
+  )
+}
+
+<!-- Indexability -->
+{noindex && <meta name="robots" content="noindex,nofollow" />}
+
+<!-- Favicon & PWA -->
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
+
+<!-- Open Graph -->
+<meta property="og:type" content={type} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalUrl} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:alt" content={imageAlt} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:locale" content={loc.ogLocale} />
+{
+  type === 'article' && publishedTime && (
+    <meta property="article:published_time" content={publishedTime} />
+  )
+}
+{
+  type === 'article' && modifiedTime && (
+    <meta property="article:modified_time" content={modifiedTime} />
+  )
+}
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={ogImage} />
+
+<!-- JSON-LD -->
+{
+  jsonLd && (
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
+  )
+}
+
+<!--
+  DNS prefetch + preconnect for third-party origins used site-wide.
+  Preload the self-hosted display font with `crossorigin` (mandatory
+  or the font is fetched twice — performance.md §3.6).
+-->
+<link rel="preconnect" href="https://plausible.io" />
+<link rel="preconnect" href="https://challenges.cloudflare.com" />
+<link rel="preload" as="font" type="font/woff2" href="/fonts/inter-var.woff2" crossorigin />
+
+<!-- Analytics: Plausible (cookieless, ~1 KB, no consent banner). -->
+{
+  import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN && (
+    <script
+      defer
+      data-domain={import.meta.env.PUBLIC_PLAUSIBLE_DOMAIN}
+      src={import.meta.env.PUBLIC_PLAUSIBLE_SCRIPT ?? 'https://plausible.io/js/script.js'}
+    />
+  )
+}

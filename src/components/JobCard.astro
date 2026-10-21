@@ -1,0 +1,66 @@
+---
+/**
+ * <JobCard> — Card for an open position.
+ */
+interface Props {
+  title: string;
+  badge: string;
+  location: string;
+  team: string;
+  summary: string;
+  href: string;
+}
+const { title, badge, location, team, summary, href } = Astro.props;
+---
+
+<article class="job-card glass-card">
+  <header class="job-head">
+    <h3 class="job-title">{title}</h3>
+    <span class="badge">{badge}</span>
+  </header>
+  <p class="job-meta">
+    <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i> {location}</span>
+    <span><i class="fa-solid fa-people-group" aria-hidden="true"></i> {team}</span>
+  </p>
+  <p class="job-summary">{summary}</p>
+  <p><a class="btn btn--ghost" href={href}>View role →</a></p>
+</article>
+
+<style>
+  .job-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .job-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+  .job-title {
+    color: var(--color-accent);
+    font-size: var(--fs-xl);
+    margin: 0;
+  }
+  .job-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    color: var(--color-text-muted);
+    margin: 0;
+    font-size: var(--fs-sm);
+  }
+  .job-meta i {
+    color: var(--color-accent);
+    margin-right: 0.4rem;
+  }
+  .job-summary {
+    margin: 0;
+    line-height: var(--lh-normal);
+  }
+  .job-card .btn {
+    align-self: flex-start;
+  }
+</style>

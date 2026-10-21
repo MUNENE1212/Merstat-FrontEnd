@@ -1,0 +1,224 @@
+---
+/**
+ * Trainings page — 11 flagship tracks + formats + booking form.
+ * Form posts to Netlify Forms with Turnstile placeholder.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../utils/site';
+import { breadcrumbJsonLd } from '../utils/jsonld';
+import TrainingForm from '../components/forms/TrainingForm.astro';
+
+const trainings = (await getCollection('trainings', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'Trainings', url: SITE.url + '/trainings/' },
+]);
+---
+
+<BaseLayout
+  title={`Professional training courses — ${SITE.name}`}
+  description="MERSTAT strengthens capability through practical, hands-on training. Every course includes ready-to-use templates, facilitation guides, job aids, and optional coaching. Delivery is in person, virtual, or blended."
+  jsonLd={breadcrumb}
+>
+  <section class="section">
+    <div class="container" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+      <h1>Trainings</h1>
+      <p class="prose">
+        Merstat strengthens capability through practical, hands-on training. Every course includes
+        ready-to-use templates, facilitation guides, job aids, and optional coaching. Delivery is
+        available in person, virtual, or blended.
+      </p>
+    </div>
+  </section>
+
+  <!-- How our trainings work -->
+  <section class="section section--alt">
+    <div class="container">
+      <article class="glass-card" style="text-align: center;">
+        <h2>How our trainings work</h2>
+        <div class="grid grid-4 cv-auto" style="margin-top: var(--space-5);">
+          <div>
+            <i
+              class="fa-solid fa-magnifying-glass-plus"
+              style="font-size: 2.5rem; color: var(--color-accent);"
+              aria-hidden="true"></i>
+            <p style="font-weight: 600;">Needs assessment and co-design</p>
+          </div>
+          <div>
+            <i
+              class="fa-solid fa-users-gear"
+              style="font-size: 2.5rem; color: var(--color-accent);"
+              aria-hidden="true"></i>
+            <p style="font-weight: 600;">Interactive sessions with real data and scenarios</p>
+          </div>
+          <div>
+            <i
+              class="fa-solid fa-clipboard-check"
+              style="font-size: 2.5rem; color: var(--color-accent);"
+              aria-hidden="true"></i>
+            <p style="font-weight: 600;">Action plans and tool handover</p>
+          </div>
+          <div>
+            <i
+              class="fa-solid fa-hand-holding-heart"
+              style="font-size: 2.5rem; color: var(--color-accent);"
+              aria-hidden="true"></i>
+            <p style="font-weight: 600;">Optional follow-up clinics to embed practice</p>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- Flagship tracks -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Flagship tracks</h2>
+      <div class="cv-auto">
+        {
+          trainings.map((t) => (
+            <article class="glass-card training-card">
+              <h3 style="color: var(--color-accent);">
+                <i class={`fa-solid ${t.data.icon}`} aria-hidden="true" /> {t.data.title}
+              </h3>
+              <p>
+                <strong>Outcome:</strong> {t.data.outcome}
+              </p>
+              {t.data.duration && (
+                <p>
+                  <strong>Format:</strong> {t.data.duration}
+                </p>
+              )}
+              {t.data.audience && (
+                <p>
+                  <strong>Audience:</strong> {t.data.audience}
+                </p>
+              )}
+              <div
+                class="grid"
+                style="grid-template-columns: 1fr 1fr; gap: var(--space-5); margin-top: var(--space-4);"
+              >
+                <div>
+                  <h4 style="color: var(--color-mint); font-size: var(--fs-base);">Core modules</h4>
+                  <ul role="list" style="padding-left: var(--space-5);">
+                    {t.data.modules.map((m) => (
+                      <li>
+                        <i
+                          class="fa-solid fa-circle-check"
+                          style="color: var(--color-accent);"
+                          aria-hidden="true"
+                        />{' '}
+                        {m}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {t.data.deliverables && t.data.deliverables.length > 0 && (
+                  <div>
+                    <h4 style="color: var(--color-mint); font-size: var(--fs-base);">
+                      Deliverables
+                    </h4>
+                    <ul role="list" style="padding-left: var(--space-5);">
+                      {t.data.deliverables.map((d) => (
+                        <li>
+                          <i
+                            class="fa-solid fa-screwdriver-wrench"
+                            style="color: var(--color-accent);"
+                            aria-hidden="true"
+                          />{' '}
+                          {d}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Formats + audience -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Formats, audience, and certification</h2>
+      <div class="grid grid-3 cv-auto">
+        <article class="glass-card">
+          <h3>
+            <i
+              class="fa-solid fa-calendar-days"
+              style="color: var(--color-accent);"
+              aria-hidden="true"></i> Formats and duration
+          </h3>
+          <ul role="list" style="padding-left: var(--space-5);">
+            <li>Intensive masterclasses from one to three days</li>
+            <li>Modular academies across four to eight weeks</li>
+            <li>Executive clinics for senior leaders</li>
+            <li>Train-the-trainer pathways for internal sustainability</li>
+            <li>Embedded coaching during live implementation cycles</li>
+          </ul>
+        </article>
+        <article class="glass-card">
+          <h3>
+            <i class="fa-solid fa-users" style="color: var(--color-accent);" aria-hidden="true"></i> Audience
+            and language
+          </h3>
+          <p>
+            <strong>Audience:</strong> Programme teams, MEL and TPM staff, analysts and data engineers,
+            fund managers and board members, government partners, and delivery teams.
+          </p>
+          <p><strong>Language:</strong> English by default. Local-language options on request.</p>
+        </article>
+        <article class="glass-card">
+          <h3>
+            <i
+              class="fa-solid fa-graduation-cap"
+              style="color: var(--color-accent);"
+              aria-hidden="true"></i> Certification
+          </h3>
+          <p>
+            Participants receive a certificate of completion. Custom certificates are available when
+            linked to internal competency frameworks or university partners.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking form -->
+  <section class="section" id="how-to-book">
+    <div class="container container-narrow">
+      <article class="glass-card">
+        <h2 style="text-align: center;">How to book</h2>
+        <p class="prose" style="text-align: center;">
+          Use the form below or the <a href="/contact/">contact page</a>. Share objectives,
+          audience, preferred format, timelines, and any sector focus. We will propose an agenda and
+          deliverables that fit your context.
+        </p>
+        <TrainingForm trainings={trainings} />
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .training-card {
+    margin-bottom: var(--space-5);
+  }
+  .training-card h3 {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+  @media (max-width: 700px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

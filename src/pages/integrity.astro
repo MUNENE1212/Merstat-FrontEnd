@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../utils/site';
+---
+
+<BaseLayout
+  title={`Integrity hotline — ${SITE.name}`}
+  description="Report integrity concerns to Merstat's independent integrity line."
+>
+  <section class="section">
+    <div class="container container-narrow">
+      <h1>Integrity hotline</h1>
+      <p>
+        Merstat operates an independent integrity line for raising concerns about fraud, corruption,
+        harassment, discrimination, safeguarding failures, or other misconduct.
+      </p>
+
+      <h2>How to report</h2>
+      <p>
+        Email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> with the subject "Integrity". Your report
+        is received by the Director and treated as confidential.
+      </p>
+
+      <h2>What happens next</h2>
+      <ol>
+        <li>You receive an acknowledgement within 5 working days.</li>
+        <li>The Director reviews the report and decides on next steps.</li>
+        <li>If an investigation is needed, an independent investigator is appointed.</li>
+        <li>You are updated on outcome (subject to confidentiality).</li>
+      </ol>
+
+      <h2>Whistleblower protection</h2>
+      <p>
+        Retaliation against anyone who reports in good faith is a serious breach of policy and will
+        result in disciplinary action up to and including dismissal. We support and protect
+        whistleblowers.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

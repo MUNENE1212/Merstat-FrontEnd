@@ -1,0 +1,78 @@
+---
+/**
+ * Contact / Booking page — single form with intent routing.
+ * Submits to Netlify Forms with Turnstile (spam protection).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ContactForm from '../components/forms/ContactForm.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../utils/site';
+import { professionalServiceJsonLd, breadcrumbJsonLd } from '../utils/jsonld';
+
+const services = (await getCollection('services', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const jsonLd = [
+  professionalServiceJsonLd(),
+  breadcrumbJsonLd([
+    { name: 'Home', url: SITE.url + '/' },
+    { name: 'Contact', url: SITE.url + '/contact/' },
+  ]),
+];
+
+const intent = Astro.url.searchParams.get('intent') ?? 'service';
+const preselectedService = Astro.url.searchParams.get('service') ?? '';
+---
+
+<BaseLayout
+  title={`Contact — ${SITE.name}`}
+  description="Tell us about your context, your objectives, and your timeline. We reply within one working day with a proposed approach and a partner call."
+  jsonLd={jsonLd}
+>
+  <section class="section">
+    <div class="container" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+      <h1>Get in touch</h1>
+      <p class="prose">
+        Tell us about your context, your objectives, and your timeline. We reply within one working
+        day with a proposed approach and a partner call. Merstat only contacts candidates and
+        clients from <strong>@merstat.org</strong>.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--alt">
+    <div class="container container-narrow">
+      <article class="glass-card">
+        <ContactForm services={services} intent={intent} preselectedService={preselectedService} />
+      </article>
+    </div>
+  </section>
+
+  <!-- Contact details -->
+  <section class="section">
+    <div class="container container-narrow" style="text-align: center;">
+      <article class="glass-card">
+        <h2>Office</h2>
+        <p>
+          <i class="fa-solid fa-location-dot" style="color: var(--color-accent);" aria-hidden="true"
+          ></i>
+          Westlands, Nairobi, Kenya
+        </p>
+        <p>
+          <i class="fa-solid fa-phone" style="color: var(--color-accent);" aria-hidden="true"></i>
+          <a href={`tel:${SITE.phoneRaw}`}>{SITE.phone}</a>
+        </p>
+        <p>
+          <i class="fa-solid fa-envelope" style="color: var(--color-accent);" aria-hidden="true"
+          ></i>
+          <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+        </p>
+        <p>
+          <i class="fa-solid fa-clock" style="color: var(--color-accent);" aria-hidden="true"></i>
+          Mon–Fri, 9:00–17:00 EAT
+        </p>
+      </article>
+    </div>
+  </section>
+</BaseLayout>

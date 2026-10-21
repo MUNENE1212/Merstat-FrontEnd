@@ -1,0 +1,110 @@
+---
+/**
+ * TrainingForm — booking inquiry form for a training track.
+ */
+import { useTranslations, getLangFromUrl } from '../../i18n/utils';
+import { SITE } from '../../utils/site';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
+
+interface Props {
+  trainings: Array<{ id: string; data: { title: string; shortTitle: string } }>;
+}
+const { trainings } = Astro.props;
+---
+
+<form
+  name="training"
+  method="POST"
+  action="/api/forms/training?intent=training"
+  class="training-form"
+>
+  <input type="hidden" name="form-name" value="training" />
+  <p class="sr-only">
+    <label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+  </p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="name">{t('form.name')} <span aria-hidden="true">*</span></label>
+      <input id="name" name="name" type="text" required autocomplete="name" />
+    </div>
+    <div class="field">
+      <label for="email">{t('form.email')} <span aria-hidden="true">*</span></label>
+      <input id="email" name="email" type="email" required autocomplete="email" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="org">{t('form.org')}</label>
+    <input id="org" name="org" type="text" autocomplete="organization" />
+  </div>
+
+  <div class="field">
+    <label for="training">{t('form.training')} <span aria-hidden="true">*</span></label>
+    <select id="training" name="training" required>
+      <option value="">Select a flagship track…</option>
+      {trainings.map((t) => <option value={t.id}>{t.data.title}</option>)}
+      <option value="general">General inquiry</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label for="details"
+      >Details (Objectives, audience, format, timelines) <span aria-hidden="true">*</span></label
+    >
+    <textarea
+      id="details"
+      name="details"
+      rows="5"
+      required
+      placeholder="Please provide details on your objectives, intended audience, preferred format (masterclass, modular, clinic), and desired timelines."
+    ></textarea>
+  </div>
+
+  <div class="field">
+    <label class="checkbox">
+      <input type="checkbox" name="consent" required />
+      <span>{t('form.consent')}</span>
+    </label>
+  </div>
+
+  <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="dark"></div>
+
+  <p style="margin-top: var(--space-5); text-align: center;">
+    <button type="submit" class="btn btn--primary btn--lg">
+      <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Submit booking inquiry
+    </button>
+  </p>
+</form>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<style>
+  .training-form .field {
+    margin-bottom: var(--space-4);
+  }
+  .training-form label.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-weight: 400;
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+  }
+  .training-form label.checkbox input {
+    width: auto;
+    margin-top: 0.2rem;
+  }
+  .cf-turnstile {
+    margin-top: var(--space-4);
+    display: flex;
+    justify-content: center;
+  }
+  @media (max-width: 700px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

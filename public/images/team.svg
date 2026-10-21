@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="Three people collaborating around a table">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#003366"/>
+      <stop offset="1" stop-color="#001f3f"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" rx="20" fill="url(#bg)"/>
+  <!-- table -->
+  <ellipse cx="300" cy="280" rx="180" ry="35" fill="#FFC300" opacity="0.2"/>
+  <ellipse cx="300" cy="280" rx="180" ry="35" fill="none" stroke="#FFC300" stroke-width="2" opacity="0.6"/>
+  <!-- person 1 -->
+  <g transform="translate(150,140)">
+    <circle cx="0" cy="0" r="30" fill="#FFC300"/>
+    <path d="M -50 90 Q -50 40 0 40 Q 50 40 50 90 Z" fill="#FFC300"/>
+  </g>
+  <!-- person 2 -->
+  <g transform="translate(300,120)">
+    <circle cx="0" cy="0" r="35" fill="#CEF4EB"/>
+    <path d="M -55 100 Q -55 45 0 45 Q 55 45 55 100 Z" fill="#CEF4EB"/>
+  </g>
+  <!-- person 3 -->
+  <g transform="translate(450,140)">
+    <circle cx="0" cy="0" r="30" fill="#FFC300"/>
+    <path d="M -50 90 Q -50 40 0 40 Q 50 40 50 90 Z" fill="#FFC300"/>
+  </g>
+  <!-- speech bubble accents -->
+  <circle cx="200" cy="170" r="6" fill="#CEF4EB" opacity="0.6"/>
+  <circle cx="400" cy="170" r="6" fill="#CEF4EB" opacity="0.6"/>
+  <text x="300" y="370" text-anchor="middle" fill="#FFC300" font-family="system-ui,sans-serif" font-size="14" font-weight="700" letter-spacing="2">COLLABORATE</text>
+</svg>

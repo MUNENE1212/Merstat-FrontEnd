@@ -1,0 +1,164 @@
+---
+/**
+ * Home page — the canonical / page.
+ * Uses BaseLayout. Pulls 6 service cards (the highest-leverage surfacing)
+ * and 4 case studies for immediate proof. Organization JSON-LD on home.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Hero from '../components/Hero.astro';
+import ServiceCard from '../components/ServiceCard.astro';
+import CaseStudyCard from '../components/CaseStudyCard.astro';
+import { getCollection } from 'astro:content';
+import { organizationJsonLd, breadcrumbJsonLd } from '../utils/jsonld';
+import { SITE } from '../utils/site';
+
+const allServices = (await getCollection('services', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const featuredServices = allServices.slice(0, 6);
+
+const allCaseStudies = (await getCollection('case-studies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const featuredCaseStudies = allCaseStudies.slice(0, 4);
+
+const jsonLd = organizationJsonLd();
+const breadcrumb = breadcrumbJsonLd([{ name: 'Home', url: SITE.url + '/' }]);
+---
+
+<BaseLayout
+  title={`${SITE.name} — ${SITE.tagline}`}
+  description={SITE.description}
+  jsonLd={[jsonLd, breadcrumb]}
+>
+  <Hero
+    headline="Building programs. Measuring change. Sustaining impact."
+    lead="Merstat is a development partner that designs and delivers programs, strengthens systems, and provides independent monitoring to ensure accountability and learning. Specialists in market systems development, climate MRV, ESG, jobs measurement, and impact investing."
+    primaryCta={{ label: 'Our services', href: '/services/' }}
+    secondaryCta={{ label: 'Book our services', href: '/contact/' }}
+  />
+
+  <!-- Why partner with Merstat — value props -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Why partner with Merstat</h2>
+      <p class="prose" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+        We are more than evaluators. Merstat is a development partner that
+        <span class="highlight"
+          >designs programs, drives systemic change, and equips organizations with the tools to
+          track impact and investment</span
+        >. Whether through jobs measurement frameworks, ESG systems, or impact investing tracking,
+        we help partners prove, improve, and sustain their impact.
+      </p>
+
+      <div class="grid grid-3 cv-auto" style="margin-top: var(--space-7);">
+        <article class="glass-card">
+          <i
+            class="fa-solid fa-chart-line"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Program design and implementation</h3>
+          <p>
+            We design and deliver programs that create lasting change in communities and markets.
+          </p>
+        </article>
+        <article class="glass-card">
+          <i
+            class="fa-solid fa-magnifying-glass-dollar"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>Impact measurement</h3>
+          <p>
+            Advanced frameworks for tracking investment impact, ESG performance, and job creation.
+          </p>
+        </article>
+        <article class="glass-card">
+          <i
+            class="fa-solid fa-shield-halved"
+            style="font-size: 2.5rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h3>System strengthening</h3>
+          <p>
+            Building resilient systems that adapt to climate challenges and promote inclusive
+            growth.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured services — 6 highest-priority cards -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">What we do</h2>
+      <div class="grid grid-2 cv-auto">
+        {
+          featuredServices.map((s) => (
+            <ServiceCard
+              title={s.data.title}
+              tagline={s.data.tagline}
+              summary={s.data.summary}
+              icon={s.data.icon}
+              href={`/services/${s.id}/`}
+            />
+          ))
+        }
+      </div>
+      <p style="text-align: center; margin-top: var(--space-7);">
+        <a class="btn btn--ghost" href="/services/">See all 13 services →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Featured case studies — anonymous, Proofmap 6-block -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">What we've achieved</h2>
+      <p class="prose" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+        Anonymised for partner privacy — references available on request.
+      </p>
+      <div class="grid grid-2 cv-auto" style="margin-top: var(--space-7);">
+        {
+          featuredCaseStudies.map((cs) => (
+            <CaseStudyCard
+              title={cs.data.title}
+              partnerDescriptor={cs.data.partnerDescriptor}
+              sector={cs.data.sector}
+              geography={cs.data.geography}
+              year={cs.data.year}
+              snapshot={cs.data.snapshot}
+              href={`/results/#${cs.id}`}
+            />
+          ))
+        }
+      </div>
+      <p style="text-align: center; margin-top: var(--space-7);">
+        <a class="btn btn--ghost" href="/results/">More results and methods →</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Open roles + training CTA — high-intent entry points -->
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-2">
+        <article class="glass-card">
+          <h3>Join the team</h3>
+          <p>
+            Open positions across MEL, TPM, climate MRV, jobs and inclusion, and health systems.
+            Remote within Africa, Nairobi-based, or global roster.
+          </p>
+          <p><a class="btn btn--primary" href="/careers/">See open roles</a></p>
+        </article>
+        <article class="glass-card">
+          <h3>Build your team's capacity</h3>
+          <p>
+            Flagship training tracks in DCED MEL, climate MRV, ESG, jobs measurement, TPM
+            excellence, value for money, and more.
+          </p>
+          <p><a class="btn btn--primary" href="/trainings/">Browse training tracks</a></p>
+        </article>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,201 @@
+---
+/**
+ * <Nav /> — Single shared navigation across every page.
+ * Mobile menu uses native <details> + CSS-only disclosure for zero JS.
+ */
+import { NAV_LINKS, SITE } from '../utils/site';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => {
+  const normalized = href.replace(/\/$/, '') || '/';
+  return currentPath === normalized || (normalized !== '/' && currentPath.startsWith(normalized));
+};
+---
+
+<a class="skip-link" href="#main">{t('nav.skip')}</a>
+
+<header class="site-header">
+  <nav class="site-nav container" aria-label="Primary">
+    <a class="brand" href="/" aria-label={SITE.name}>
+      <span class="brand-mark">MERSTAT</span>
+    </a>
+
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-hidden="true" />
+    <!-- The label role prohibits aria-label (WCAG 4.1.2 / axe
+         aria-prohibited-attr), so the accessible name comes from a
+         visually-hidden span inside the control instead. -->
+    <label for="nav-toggle" class="nav-toggle-btn">
+      <span class="sr-only">{t('nav.menu')}</span>
+      <span></span><span></span><span></span>
+    </label>
+
+    <ul class="nav-links" role="list">
+      {
+        NAV_LINKS.map(({ href, key }) => (
+          <li>
+            <a
+              href={href}
+              class:list={['nav-link', { active: isActive(href) }]}
+              aria-current={isActive(href) ? 'page' : undefined}
+            >
+              {t(key)}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: rgba(0, 51, 102, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .site-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-5);
+    height: var(--nav-height);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    margin-right: auto;
+  }
+
+  .brand-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--color-accent);
+    letter-spacing: 0.02em;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .nav-link {
+    display: inline-block;
+    padding: 0.5rem 0.9rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    font-size: var(--fs-sm);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    position: relative;
+    transition:
+      color var(--duration-fast) var(--ease-standard),
+      background var(--duration-fast) var(--ease-standard);
+  }
+
+  .nav-link:hover,
+  .nav-link:focus-visible {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  .nav-link.active {
+    color: var(--color-accent);
+  }
+
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.25rem;
+    height: 2px;
+    background: var(--color-accent);
+    border-radius: 2px;
+  }
+
+  /* Hamburger */
+  .nav-toggle {
+    display: none;
+  }
+  .nav-toggle-btn {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    background: transparent;
+    border: 1px solid rgba(255, 195, 0, 0.4);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+  }
+
+  /* Scoped with :not(.sr-only) — the accessible-name span must keep the
+     .sr-only clipping rather than being stretched into a hamburger bar. */
+  .nav-toggle-btn span:not(.sr-only) {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--color-accent);
+    transition:
+      transform var(--duration-fast) var(--ease-standard),
+      opacity var(--duration-fast) var(--ease-standard);
+  }
+
+  @media (max-width: 900px) {
+    .nav-toggle-btn {
+      display: flex;
+    }
+    .nav-links {
+      position: absolute;
+      top: var(--nav-height);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      background: rgba(0, 51, 102, 0.98);
+      padding: var(--space-4);
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--duration-base) var(--ease-standard);
+    }
+    .nav-toggle:checked ~ .nav-links {
+      max-height: 80vh;
+      overflow: auto;
+    }
+    /* nth-child counts the .sr-only name span, so the bars are 2/3/4. */
+    .nav-toggle:checked + .nav-toggle-btn span:nth-child(2) {
+      transform: translateY(8px) rotate(45deg);
+    }
+    .nav-toggle:checked + .nav-toggle-btn span:nth-child(3) {
+      opacity: 0;
+    }
+    .nav-toggle:checked + .nav-toggle-btn span:nth-child(4) {
+      transform: translateY(-8px) rotate(-45deg);
+    }
+    .nav-link {
+      padding: 0.75rem 1rem;
+      font-size: var(--fs-base);
+    }
+    .nav-link.active::after {
+      display: none;
+    }
+    .nav-link.active {
+      background: rgba(255, 195, 0, 0.12);
+    }
+  }
+</style>

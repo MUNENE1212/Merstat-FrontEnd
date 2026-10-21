@@ -1,0 +1,220 @@
+---
+/**
+ * Results & Methods — combines:
+ *   - 10 "results at a glance" cards
+ *   - 4 detailed case studies (Proofmap 6-block)
+ *   - 10 methods (each expandable to its own page if needed)
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CaseStudyCard from '../components/CaseStudyCard.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../utils/site';
+import { breadcrumbJsonLd } from '../utils/jsonld';
+
+const caseStudies = (await getCollection('case-studies', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const methods = (await getCollection('methods', ({ data }) => !data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+const breadcrumb = breadcrumbJsonLd([
+  { name: 'Home', url: SITE.url + '/' },
+  { name: 'Results & Methods', url: SITE.url + '/results/' },
+]);
+
+// "Results at a glance" — distilled short cards.
+const resultsAtAGlance = [
+  {
+    icon: 'fa-gears',
+    title: 'DCED Systems MEL',
+    body: 'DCED-aligned MEL systems were established and operated with external audit readiness built in.',
+  },
+  {
+    icon: 'fa-eye',
+    title: 'Third-Party Monitoring',
+    body: 'Verified delivery in hard-to-reach areas and fed rapid findings into management meetings.',
+  },
+  {
+    icon: 'fa-chart-line',
+    title: 'Flexible Baselines',
+    body: 'Rolling and retrospective baselines were designed where timing required flexibility.',
+  },
+  {
+    icon: 'fa-tachometer-alt',
+    title: 'Live Dashboards',
+    body: 'Live decision dashboards were set up so managers acted on quality, coverage, equity, and performance signals.',
+  },
+  {
+    icon: 'fa-leaf',
+    title: 'Climate MRV Integration',
+    body: 'Climate MRV calculators and protocols were integrated with operational monitoring.',
+  },
+  {
+    icon: 'fa-briefcase',
+    title: 'Jobs Frameworks',
+    body: 'Jobs frameworks captured direct, indirect, and induced employment with FTE and quality markers.',
+  },
+  {
+    icon: 'fa-hand-holding-heart',
+    title: 'ESG Implementation',
+    body: 'ESG diagnostics and reporting tools were rolled out with training for teams and boards.',
+  },
+  {
+    icon: 'fa-users',
+    title: 'Inclusion & Poverty',
+    body: 'Inclusion and poverty profiling were embedded using GESI, GALS, Washington Group tools, PPI, and MPI.',
+  },
+  {
+    icon: 'fa-satellite-dish',
+    title: 'Remote Monitoring',
+    body: 'Remote monitoring routines were applied where access was constrained with consent-based voice.',
+  },
+  {
+    icon: 'fa-heartbeat',
+    title: 'Health Systems',
+    body: 'Health systems were strengthened through preparation of routine information systems and decision dashboards.',
+  },
+];
+---
+
+<BaseLayout
+  title={`Results and Methods — ${SITE.name}`}
+  description="Confidential by design. We protect partner privacy. We share methods, results, and learning without naming organisations. References are available on request."
+  jsonLd={breadcrumb}
+>
+  <section class="section">
+    <div class="container" style="text-align: center; max-width: 70ch; margin-inline: auto;">
+      <h1>Results and methods</h1>
+      <p class="prose">
+        Confidential by design. We protect partner privacy. We share methods, results, and learning
+        without naming organisations. References are available on request.
+      </p>
+    </div>
+  </section>
+
+  <!-- Results at a glance -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Results at a glance</h2>
+      <div class="grid grid-3 cv-auto">
+        {
+          resultsAtAGlance.map((r) => (
+            <article class="glass-card" style="text-align: center;">
+              <i
+                class={`fa-solid ${r.icon}`}
+                style="font-size: 2.5rem; color: var(--color-accent);"
+                aria-hidden="true"
+              />
+              <h3 style="font-size: var(--fs-lg);">{r.title}</h3>
+              <p style="font-size: var(--fs-base);">{r.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Snapshots from recent work -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Snapshots from recent work</h2>
+      <div class="grid grid-2 cv-auto">
+        {
+          caseStudies.map((cs) => (
+            <article id={cs.id} class="case-detail glass-card">
+              <header>
+                <p class="case-meta">
+                  <span class="badge">{cs.data.sector}</span>
+                  <span class="badge badge--muted">{cs.data.geography}</span>
+                  <span class="badge badge--muted">{cs.data.year}</span>
+                </p>
+                <h3>{cs.data.title}</h3>
+                <p class="case-partner">For {cs.data.partnerDescriptor}.</p>
+              </header>
+
+              <h4>Snapshot</h4>
+              <p>{cs.data.snapshot}</p>
+
+              <h4>Setup</h4>
+              <p>{cs.data.setup}</p>
+
+              <h4>Complication</h4>
+              <p>{cs.data.complication}</p>
+
+              <h4>What we did</h4>
+              <p>{cs.data.solution}</p>
+
+              <h4>What this achieved</h4>
+              <ul role="list">
+                {cs.data.results.map((r) => (
+                  <li>{r}</li>
+                ))}
+              </ul>
+
+              <h4>Takeaway</h4>
+              <p>{cs.data.takeaway}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Methods we apply -->
+  <section class="section section--alt">
+    <div class="container">
+      <h2 class="section-title">Methods we apply when appropriate</h2>
+      <div class="grid grid-3 cv-auto">
+        {
+          methods.map((m) => (
+            <article class="glass-card" style="text-align: center;">
+              <i
+                class={`fa-solid ${m.data.icon}`}
+                style="font-size: 2.5rem; color: var(--color-accent);"
+                aria-hidden="true"
+              />
+              <h3 style="font-size: var(--fs-lg);">{m.data.title}</h3>
+              <p style="font-size: var(--fs-base);">{m.data.summary}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .case-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .case-detail h3 {
+    margin: var(--space-2) 0 0;
+    color: var(--color-accent);
+  }
+  .case-detail h4 {
+    color: var(--color-accent);
+    font-size: var(--fs-base);
+    margin-top: var(--space-3);
+    margin-bottom: var(--space-1);
+  }
+  .case-detail ul {
+    padding-left: var(--space-5);
+  }
+  .case-detail li {
+    margin-bottom: var(--space-2);
+  }
+  .case-partner {
+    font-style: italic;
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+  .case-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+</style>

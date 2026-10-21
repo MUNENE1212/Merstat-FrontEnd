@@ -1,0 +1,139 @@
+---
+/**
+ * <BaseLayout> — The page wrapper.
+ *
+ * Loads design tokens, base styles, utilities, and the Inter variable font.
+ * Renders SEO + Nav + slot + Footer + the web-vitals RUM script.
+ */
+import '../styles/base.css';
+import '../styles/utilities.css';
+import SEO from '../components/SEO.astro';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import type { Locale } from '../i18n/utils';
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  type?: 'website' | 'article';
+  publishedTime?: string;
+  modifiedTime?: string;
+  locale?: Locale;
+  alternates?: Array<{ locale: Locale; path: string }>;
+  jsonLd?: unknown;
+  noindex?: boolean;
+  /** Page-level body background image (overrides the global hero). */
+  backgroundImage?: string;
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang={props.locale ?? 'en'} dir="ltr">
+  <head>
+    <SEO {...props} />
+  </head>
+
+  <body>
+    <Nav />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- web-vitals RUM → Plausible custom events -->
+    <script>
+      import('web-vitals').then(({ onLCP, onINP, onCLS, onFCP, onTTFB }) => {
+        function report(name: string, value: number) {
+          if (typeof window === 'undefined' || !('plausible' in window)) return;
+          // @ts-expect-error - plausible custom-event API
+          window.plausible(name, { props: { value: Math.round(value) } });
+        }
+        onLCP(({ value }) => report('web_vitals_lcp', value));
+        onINP(({ value }) => report('web_vitals_inp', value));
+        onCLS(({ value }) => report('web_vitals_cls', value * 1000));
+        onFCP(({ value }) => report('web_vitals_fcp', value));
+        onTTFB(({ value }) => report('web_vitals_ttfb', value));
+      });
+    </script>
+
+    <!--
+      Page background — fixed <img> instead of background-attachment: fixed.
+      Two layers of overlay follow in the <style> block to keep all text
+      legible regardless of where the image is bright.
+    -->
+    <img
+      class="page-background"
+      src="/images/hero.webp"
+      alt=""
+      aria-hidden="true"
+      width="960"
+      height="679"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+    />
+    <div class="page-overlay page-overlay--base" aria-hidden="true"></div>
+    <div class="page-overlay page-overlay--top" aria-hidden="true"></div>
+  </body>
+</html>
+
+<style is:global>
+  /* Fixed-position background, not background-attachment: fixed. */
+  .page-background {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: -3;
+    pointer-events: none;
+  }
+
+  /*
+    Two-layer overlay so text on the image is always legible.
+    --base: uniform dark wash across the entire viewport
+    --top:  stronger darken at the top, fading to the base below
+    Result: image is a subtle textured background, not a busy
+    surface competing with the text. Headings, body copy, and
+    third-party widgets (Turnstile, etc.) all sit on a uniform
+    dark blue field.
+  */
+  .page-overlay--base {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 31, 63, 0.88);
+    z-index: -2;
+    pointer-events: none;
+  }
+
+  .page-overlay--top {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 18, 41, 0.55) 0%,
+      rgba(0, 18, 41, 0.3) 30%,
+      rgba(0, 18, 41, 0) 60%,
+      rgba(0, 18, 41, 0.3) 100%
+    );
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /*
+    Global text shadow on every heading — acts as a safety net so
+    the brand-yellow heading never disappears on a bright patch of
+    the image, even if the overlay is ever weakened by a future change.
+  */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-shadow: var(--shadow-text);
+  }
+</style>

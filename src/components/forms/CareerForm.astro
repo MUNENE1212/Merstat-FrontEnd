@@ -1,0 +1,198 @@
+---
+/**
+ * CareerForm — general application + CV upload.
+ *
+ * CV upload uses a Netlify Function to issue a Cloudflare R2 presigned URL.
+ * This keeps PII out of Netlify's database and raises the file size cap
+ * above 8 MB. Falls back to a click-to-upload UI for browsers without JS.
+ */
+import { useTranslations, getLangFromUrl } from '../../i18n/utils';
+import { SITE } from '../../utils/site';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
+
+interface Props {
+  jobs: Array<{ id: string; data: { title: string; team: string } }>;
+}
+const { jobs } = Astro.props;
+---
+
+<form name="careers" method="POST" action="/api/forms/careers?intent=careers" class="career-form">
+  <input type="hidden" name="form-name" value="careers" />
+  <p class="sr-only">
+    <label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+  </p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="firstName">First name <span aria-hidden="true">*</span></label>
+      <input id="firstName" name="firstName" type="text" required autocomplete="given-name" />
+    </div>
+    <div class="field">
+      <label for="lastName">Last name <span aria-hidden="true">*</span></label>
+      <input id="lastName" name="lastName" type="text" required autocomplete="family-name" />
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="email">{t('form.email')} <span aria-hidden="true">*</span></label>
+      <input id="email" name="email" type="email" required autocomplete="email" />
+    </div>
+    <div class="field">
+      <label for="phone">{t('form.phone')}</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="position">Talent pool / area of interest <span aria-hidden="true">*</span></label>
+    <select id="position" name="position" required>
+      <option value="">Select your best fit talent pool</option>
+      {
+        jobs.map((j) => (
+          <option value={j.id}>
+            {j.data.title} — {j.data.team}
+          </option>
+        ))
+      }
+      <option value="other">Other / general application</option>
+    </select>
+  </div>
+
+  <!--
+    CV upload: Netlify Function issues a presigned R2 URL.
+    The file is uploaded directly to R2; we only submit the URL back.
+  -->
+  <div class="field">
+    <label for="cv-file">{t('form.upload_cv')} <span aria-hidden="true">*</span></label>
+    <div class="cv-drop">
+      <input
+        id="cv-file"
+        name="cv-file"
+        type="file"
+        accept=".pdf,.doc,.docx"
+        required
+        aria-describedby="cv-help"
+      />
+      <small id="cv-help">{t('form.upload_help')}</small>
+    </div>
+    <input type="hidden" name="cvUrl" id="cv-url" />
+  </div>
+
+  <div class="field">
+    <label for="message">Cover note (availability and preferred engagement type)</label>
+    <textarea
+      id="message"
+      name="message"
+      rows="5"
+      placeholder="Tell us about your skills, experience, location, availability, and preferred engagement type (full-time, project-based, etc.)."
+    ></textarea>
+  </div>
+
+  <div class="field">
+    <label class="checkbox">
+      <input type="checkbox" name="consent" required />
+      <span>{t('form.consent')}</span>
+    </label>
+  </div>
+
+  <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="dark"></div>
+
+  <p style="margin-top: var(--space-5); text-align: center;">
+    <button type="submit" class="btn btn--primary btn--lg">
+      <i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Submit application
+    </button>
+  </p>
+</form>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const cvFile = document.getElementById('cv-file') as HTMLInputElement | null;
+  const cvUrlInput = document.getElementById('cv-url') as HTMLInputElement | null;
+  if (cvFile && cvUrlInput) {
+    cvFile.addEventListener('change', async () => {
+      const file = cvFile.files?.[0];
+      if (!file) return;
+      try {
+        const presign = await fetch('/api/presign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+            size: file.size,
+          }),
+        });
+        if (!presign.ok) throw new Error(`Presign failed: ${presign.status}`);
+        const { uploadUrl, publicUrl } = await presign.json();
+        const upload = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        });
+        if (!upload.ok) throw new Error(`Upload failed: ${upload.status}`);
+        cvUrlInput.value = publicUrl;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('CV upload error', err);
+      }
+    });
+  }
+
+  // The CV is uploaded straight to R2 by the change handler above, so by the
+  // time the form submits the file input is redundant. Leaving it enabled
+  // would re-attach the whole file to the POST body. Disabling an input
+  // removes it from the submission without touching what the visitor sees.
+  const careerForm = cvFile?.closest('form');
+  careerForm?.addEventListener('submit', () => {
+    cvFile.disabled = true;
+  });
+</script>
+
+<style>
+  .career-form .field {
+    margin-bottom: var(--space-4);
+  }
+  .career-form label.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-weight: 400;
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+  }
+  .career-form label.checkbox input {
+    width: auto;
+    margin-top: 0.2rem;
+  }
+  .cv-drop {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px dashed rgba(255, 195, 0, 0.5);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    text-align: center;
+  }
+  .cv-drop input {
+    border: 0;
+    background: transparent;
+    padding: 0;
+  }
+  .cv-drop small {
+    display: block;
+    margin-top: var(--space-3);
+    color: var(--color-text-muted);
+  }
+  .cf-turnstile {
+    margin-top: var(--space-4);
+    display: flex;
+    justify-content: center;
+  }
+  @media (max-width: 700px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

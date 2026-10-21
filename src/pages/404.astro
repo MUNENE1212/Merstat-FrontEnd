@@ -1,0 +1,46 @@
+---
+/**
+ * 404 — Not Found.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../utils/site';
+---
+
+<BaseLayout
+  title={`Page not found — ${SITE.shortName}`}
+  description="The page you are looking for does not exist or has been moved."
+  noindex
+>
+  <section class="section">
+    <div class="container container-narrow" style="text-align: center;">
+      <p style="font-size: 6rem; color: var(--color-accent); font-weight: 800; margin: 0;">404</p>
+      <h1>Page not found</h1>
+      <p class="prose">
+        The page you are looking for does not exist or has been moved. Try one of the links below.
+      </p>
+      <div class="grid grid-3 cv-auto" style="margin-top: var(--space-7); text-align: left;">
+        <a href="/" class="glass-card" style="text-decoration: none; color: inherit;">
+          <i
+            class="fa-solid fa-house"
+            style="font-size: 2rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h2>Home</h2>
+        </a>
+        <a href="/services/" class="glass-card" style="text-decoration: none; color: inherit;">
+          <i
+            class="fa-solid fa-diagram-project"
+            style="font-size: 2rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h2>Services</h2>
+        </a>
+        <a href="/contact/" class="glass-card" style="text-decoration: none; color: inherit;">
+          <i
+            class="fa-solid fa-paper-plane"
+            style="font-size: 2rem; color: var(--color-accent);"
+            aria-hidden="true"></i>
+          <h2>Contact</h2>
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

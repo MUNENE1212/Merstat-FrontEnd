@@ -1,0 +1,51 @@
+---
+/**
+ * Thank-you page. Three variants by `?intent=` query param.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../utils/site';
+
+const intent = Astro.url.searchParams.get('intent') ?? 'general';
+const titles: Record<string, string> = {
+  service: 'Thank you — your request is in',
+  careers: 'Thank you — your application is in',
+  training: 'Thank you — your booking inquiry is in',
+  general: 'Thank you',
+};
+const title = titles[intent] ?? titles.general;
+---
+
+<BaseLayout title={`${title} — ${SITE.shortName}`} description={title} noindex>
+  <section class="section">
+    <div class="container container-narrow" style="text-align: center;">
+      <i
+        class="fa-solid fa-circle-check"
+        style="font-size: 4rem; color: var(--color-accent);"
+        aria-hidden="true"></i>
+      <h1>{title}</h1>
+      <p class="prose">
+        Your message is on its way. We will reply within one working day. If you don't hear from us,
+        check spam or email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.
+      </p>
+
+      <div class="grid grid-2 cv-auto" style="margin-top: var(--space-7); text-align: left;">
+        <article class="glass-card">
+          <h3>While you wait</h3>
+          <ul role="list" style="padding-left: var(--space-5);">
+            <li><a href="/services/">Browse our services</a></li>
+            <li><a href="/trainings/">Browse our training tracks</a></li>
+            <li><a href="/results/">See anonymised results and methods</a></li>
+            <li><a href="/careers/">See open roles</a></li>
+          </ul>
+        </article>
+        <article class="glass-card">
+          <h3>About us</h3>
+          <p>
+            Merstat is a development partner that designs programs, strengthens systems, and
+            provides independent monitoring. We reply within one working day.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,35 @@
+---
+/**
+ * Swahili home. Falls back to the English home if /sw/translations
+ * are not yet populated. Replace with proper Swahili content once
+ * the dictionary is filled in.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { SITE } from '../../utils/site';
+import { useTranslations, type Locale } from '../../i18n/utils';
+import { organizationJsonLd, breadcrumbJsonLd } from '../../utils/jsonld';
+
+const locale: Locale = 'sw';
+const t = useTranslations(locale);
+const breadcrumb = breadcrumbJsonLd([{ name: 'Mwanzo', url: `${SITE.url}/${locale}/` }]);
+---
+
+<BaseLayout
+  title={`${SITE.name} — ${t('footer.tag')}`}
+  description={SITE.description}
+  locale={locale}
+  jsonLd={[organizationJsonLd(), breadcrumb]}
+>
+  <section class="section">
+    <div class="container" style="text-align: center;">
+      <h1>{t('footer.tag')}</h1>
+      <p class="prose" style="margin-inline: auto;">
+        {SITE.description}
+      </p>
+      <p style="margin-top: var(--space-5);">
+        <a class="btn btn--primary btn--lg" href="/services/">{t('cta.services')}</a>
+        <a class="btn btn--ghost btn--lg" href="/contact/">{t('cta.contact')}</a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

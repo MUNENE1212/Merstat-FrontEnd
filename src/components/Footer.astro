@@ -1,0 +1,233 @@
+---
+/**
+ * <Footer /> — Site-wide footer with NAP, social, and legal links.
+ */
+import { SITE } from '../utils/site';
+import { useTranslations, getLangFromUrl } from '../i18n/utils';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <section class="footer-brand">
+        <p class="brand-mark">MERSTAT</p>
+        <p class="footer-tagline">{t('footer.tagline')}</p>
+        <p class="footer-tag">{t('footer.tag')}</p>
+      </section>
+
+      <section class="footer-col" aria-labelledby="footer-contact">
+        <h2 id="footer-contact">{t('footer.contact')}</h2>
+        <ul role="list" class="footer-list">
+          <li>
+            <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+          </li>
+          <li>
+            <a href={`tel:${SITE.phoneRaw}`}>{SITE.phone}</a>
+          </li>
+          <li>{t('footer.address')}</li>
+          <li>{t('footer.hours')}</li>
+        </ul>
+      </section>
+
+      <section class="footer-col" aria-labelledby="footer-legal">
+        <h2 id="footer-legal">{t('footer.legal')}</h2>
+        <ul role="list" class="footer-list">
+          <li><a href="/privacy/">{t('footer.privacy')}</a></li>
+          <li><a href="/terms/">{t('footer.terms')}</a></li>
+          <li><a href="/security/">{t('footer.security')}</a></li>
+          <li><a href="/integrity/">{t('footer.integrity')}</a></li>
+          <li><a href="/anti-slavery/">{t('footer.antislavery')}</a></li>
+        </ul>
+      </section>
+
+      <section class="footer-col" aria-labelledby="footer-social">
+        <h2 id="footer-social">{t('footer.social')}</h2>
+        <ul role="list" class="footer-social">
+          {
+            SITE.social.linkedin && (
+              <li>
+                <a href={SITE.social.linkedin} rel="me noopener noreferrer" aria-label="LinkedIn">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M19 0h-14C2.24 0 0 2.24 0 5v14c0 2.76 2.24 5 5 5h14c2.76 0 5-2.24 5-5V5c0-2.76-2.24-5-5-5zM8 19H5V8h3v11zM6.5 6.73C5.53 6.73 4.75 5.94 4.75 4.98c0-.96.78-1.75 1.75-1.75s1.75.78 1.75 1.75c0 .96-.78 1.75-1.75 1.75zM20 19h-3v-5.6c0-1.34-.02-3.07-1.87-3.07-1.87 0-2.16 1.46-2.16 2.97V19h-3V8h2.88v1.5h.04c.4-.76 1.38-1.56 2.84-1.56 3.04 0 3.6 2 3.6 4.59V19z" />
+                  </svg>
+                </a>
+              </li>
+            )
+          }
+          {
+            SITE.social.twitter && (
+              <li>
+                <a href={SITE.social.twitter} rel="me noopener noreferrer" aria-label="X (Twitter)">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </a>
+              </li>
+            )
+          }
+          {
+            SITE.social.facebook && (
+              <li>
+                <a href={SITE.social.facebook} rel="me noopener noreferrer" aria-label="Facebook">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" />
+                  </svg>
+                </a>
+              </li>
+            )
+          }
+          {
+            SITE.social.instagram && (
+              <li>
+                <a href={SITE.social.instagram} rel="me noopener noreferrer" aria-label="Instagram">
+                  <svg
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.328 3.608 1.303.975.975 1.24 2.242 1.302 3.608.058 1.266.069 1.646.069 4.85s-.011 3.585-.069 4.85c-.062 1.366-.327 2.633-1.302 3.608-.975.975-2.242 1.24-3.608 1.302-1.265.058-1.645.07-4.85.07s-3.585-.012-4.849-.07c-1.366-.062-2.633-.327-3.608-1.302-.975-.975-1.24-2.242-1.302-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.327-2.633 1.302-3.608.975-.975 2.242-1.24 3.608-1.302C8.415 2.175 8.795 2.163 12 2.163M12 0C8.741 0 8.332.014 7.052.072 5.773.13 4.548.396 3.5 1.444 2.453 2.49 2.187 3.715 2.129 4.994 2.071 6.274 2.057 6.683 2.057 9.942s.014 3.668.072 4.948c.058 1.279.324 2.504 1.371 3.55 1.048 1.048 2.273 1.314 3.552 1.372 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c1.279-.058 2.504-.324 3.55-1.372 1.048-1.046 1.314-2.271 1.372-3.55.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.058-1.279-.324-2.504-1.372-3.55C19.452.396 18.227.13 16.948.072 15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+                  </svg>
+                </a>
+              </li>
+            )
+          }
+        </ul>
+      </section>
+    </div>
+
+    <div class="footer-bottom">
+      <small>{t('footer.copyright', year)}</small>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--space-10);
+    padding-block: var(--space-8) var(--space-5);
+    background: var(--color-bg-elevated);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+  }
+
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: var(--space-7);
+    align-items: start;
+  }
+
+  .brand-mark {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--color-accent);
+    margin-bottom: var(--space-3);
+    letter-spacing: 0.02em;
+  }
+
+  .footer-tagline {
+    max-width: 36ch;
+    opacity: 0.9;
+    line-height: var(--lh-snug);
+  }
+  .footer-tag {
+    margin-top: var(--space-3);
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .footer-col h2 {
+    font-size: var(--fs-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-3);
+    font-weight: 600;
+  }
+
+  .footer-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .footer-list a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .footer-list a:hover,
+  .footer-list a:focus-visible {
+    color: var(--color-accent);
+    text-decoration: underline;
+  }
+
+  .footer-social {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+  }
+
+  .footer-social a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-accent);
+    transition:
+      background var(--duration-fast) var(--ease-standard),
+      color var(--duration-fast) var(--ease-standard);
+  }
+
+  .footer-social a:hover,
+  .footer-social a:focus-visible {
+    background: var(--color-accent);
+    color: var(--color-text-inverse);
+  }
+
+  .footer-bottom {
+    margin-top: var(--space-7);
+    padding-top: var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 900px) {
+    .footer-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-5);
+    }
+  }
+
+  @media (max-width: 540px) {
+    .footer-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

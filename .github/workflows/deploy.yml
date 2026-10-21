@@ -1,0 +1,70 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to deploy (branch, tag, or SHA). Defaults to main."
+        required: false
+        default: "main"
+
+# Never cancel an in-progress production deploy.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  deployments: write
+
+jobs:
+  deploy:
+    name: Production deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://merstat.org
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || 'main' }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+
+      - name: Install
+        run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+
+      - name: Build
+        run: npm run build
+        env:
+          SITE_URL: https://merstat.org
+
+      - name: Verify the build before shipping it
+        run: |
+          node scripts/smoke-test.mjs
+          node scripts/test-api.mjs
+
+      # Streams a tar of dist/ into the release manager on the VPS. The archive
+      # keeps a top-level `dist/` so it matches the on-disk release layout the
+      # unpacker validates against. The deploy key is restricted server-side to
+      # that one script, so a leaked key cannot open a shell or read anything
+      # else on the box.
+      - name: Deploy to VPS
+        run: |
+          tar -czf - dist \
+            | ssh -i "${{ secrets.VPS_SSH_KEY }}" \
+                -o StrictHostKeyChecking=accept-new \
+                "${{ secrets.VPS_DEPLOY_USER }}@${{ secrets.VPS_HOST }}" \
+                "merstat-deploy deploy $GITHUB_SHA"
+
+      - name: Comment on commit
+        if: github.event_name == 'push'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            :rocket: Deployed to merstat.org
+            Commit: `${{ github.sha }}`

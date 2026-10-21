@@ -1,0 +1,60 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../utils/site';
+---
+
+<BaseLayout
+  title={`Privacy — ${SITE.name}`}
+  description="Merstat's privacy policy — how we collect, use, and protect your personal data."
+>
+  <section class="section">
+    <div class="container container-narrow">
+      <h1>Privacy policy</h1>
+      <p class="prose"><em>Last updated: {new Date().toISOString().slice(0, 10)}.</em></p>
+
+      <h2>What we collect</h2>
+      <p>
+        When you contact us, apply for a role, or book a training, we collect the information you
+        provide: name, email, phone (if given), organisation, and any context you choose to share.
+        For job applications, you may also upload a CV.
+      </p>
+
+      <h2>Why we collect it</h2>
+      <ul>
+        <li>To respond to your service request, training booking, or job application.</li>
+        <li>To maintain a record of our relationship with you.</li>
+        <li>To meet our legal and contractual obligations.</li>
+      </ul>
+
+      <h2>How long we keep it</h2>
+      <p>
+        Service inquiries are kept for 24 months. Training inquiries for 12 months. Job applications
+        for 6 months (or longer if you give consent to be considered for future roles). We delete
+        data on request.
+      </p>
+
+      <h2>Where it lives</h2>
+      <p>
+        Form submissions are stored in our Netlify account. CV uploads are stored in our Cloudflare
+        R2 bucket. Both are encrypted in transit and at rest. We do not sell your data or share it
+        with third parties for marketing.
+      </p>
+
+      <h2>Cookies and analytics</h2>
+      <p>
+        We use Plausible Analytics, which is cookieless and does not require consent. We do not use
+        any marketing cookies, ad networks, or third-party trackers.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        You can ask us at any time to access, correct, or delete your data. Email <a
+          href={`mailto:${SITE.email}`}>{SITE.email}</a
+        >.
+      </p>
+
+      <h2>Contact</h2>
+      <p>For privacy questions, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
+    </div>
+  </section>
+</BaseLayout>

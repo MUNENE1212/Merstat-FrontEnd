@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../utils/site';
+---
+
+<BaseLayout
+  title={`Anti-slavery statement — ${SITE.name}`}
+  description="Merstat's commitment to preventing modern slavery and human trafficking."
+>
+  <section class="section">
+    <div class="container container-narrow">
+      <h1>Anti-slavery and human trafficking statement</h1>
+      <p class="prose"><em>Last updated: {new Date().toISOString().slice(0, 10)}.</em></p>
+
+      <h2>Our commitment</h2>
+      <p>
+        Merstat Development Limited is committed to ensuring that there is no modern slavery or
+        human trafficking in our supply chain or in any part of our business. This statement is made
+        pursuant to the UK Modern Slavery Act 2015 and equivalent legislation.
+      </p>
+
+      <h2>Our policies</h2>
+      <ul>
+        <li>
+          Code of conduct that prohibits forced or child labour, debt bondage, and trafficking.
+        </li>
+        <li>
+          Recruitment checks that verify identity, right to work, and that no fees are charged to
+          candidates.
+        </li>
+        <li>Subcontractor due diligence that includes a slavery and trafficking questionnaire.</li>
+        <li>Independent integrity line for reporting concerns.</li>
+      </ul>
+
+      <h2>Our suppliers</h2>
+      <p>
+        We expect our suppliers and subcontractors to comply with the same standards. We do not
+        knowingly do business with any organisation that fails to comply.
+      </p>
+
+      <h2>Reporting concerns</h2>
+      <p>
+        If you have concerns about modern slavery or human trafficking in our work or supply chain,
+        please contact <a href={`mailto:${SITE.email}`}>{SITE.email}</a>. Reports are treated
+        confidentially.
+      </p>
+
+      <h2>Approval</h2>
+      <p>This statement was approved by the Director of Merstat Development Limited.</p>
+    </div>
+  </section>
+</BaseLayout>

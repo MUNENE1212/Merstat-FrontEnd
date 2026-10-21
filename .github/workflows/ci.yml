@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same branch/PR.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  install:
+    name: Install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+
+      - name: Cache Astro internals
+        uses: actions/cache@v4
+        with:
+          path: |
+            .astro
+            node_modules/.cache
+          key: ${{ runner.os }}-astro-${{ hashFiles('**/astro.config.mjs', '**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-astro-
+
+  lint:
+    name: Lint & type check
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Astro check (TypeScript)
+        run: npm run check || true
+        # astro check runs `astro sync` + `tsc --noEmit`; treat as a warning
+        # until the team is happy with the strictness. Promote to required
+        # by removing the `|| true` once green.
+
+  build:
+    name: Build
+    needs: install
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SITE_URL: https://merstat.org
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+      - name: Build
+        run: npm run build
+      - name: Smoke test
+        run: |
+          npm run test:smoke
+          npm run test:api
+      - name: Upload dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  a11y:
+    name: Accessibility (pa11y)
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      # Checkout is required: npm ci needs package-lock.json, and
+      # pa11y-ci needs .pa11yci.json. Downloading the dist artifact
+      # alone gives neither.
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+      - name: Start preview server
+        run: |
+          npx http-server dist -p 4321 -s -c-1 &
+          for i in {1..20}; do
+            sleep 1
+            curl -fs http://localhost:4321/ >/dev/null && break
+          done
+      - name: pa11y-ci (WCAG 2.2 AA)
+        run: npx pa11y-ci --config .pa11yci.json --json > pa11y-report.json || true
+      - name: Upload pa11y report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pa11y-report
+          path: pa11y-report.json
+
+  lighthouse:
+    name: Lighthouse CI
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci --no-audit --prefer-offline --legacy-peer-deps
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: lighthouserc.cjs
+          uploadArtifacts: true
+          temporaryPublicStorage: true

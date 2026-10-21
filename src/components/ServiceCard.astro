@@ -1,0 +1,69 @@
+---
+/**
+ * <ServiceCard> — Card used on the services index grid.
+ */
+interface Props {
+  title: string;
+  tagline: string;
+  summary: string;
+  icon: string;
+  href: string;
+}
+const { title, tagline, summary, icon, href } = Astro.props;
+---
+
+<a class="service-card glass-card" href={href}>
+  <span class="service-icon" aria-hidden="true">
+    <i class={`fa-solid ${icon}`}></i>
+  </span>
+  <h3 class="service-title">{title}</h3>
+  <p class="service-tagline">{tagline}</p>
+  <p class="service-summary">{summary}</p>
+  <span class="service-cta" aria-hidden="true">Learn more →</span>
+</a>
+
+<style>
+  .service-card {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .service-card:hover,
+  .service-card:focus-visible {
+    text-decoration: none;
+    color: inherit;
+  }
+  .service-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-lg);
+    background: rgba(255, 195, 0, 0.15);
+    color: var(--color-accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+  }
+  .service-title {
+    color: var(--color-accent);
+    font-size: var(--fs-xl);
+    margin: 0;
+  }
+  .service-tagline {
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0;
+  }
+  .service-summary {
+    color: var(--color-text-muted);
+    margin: 0;
+    line-height: var(--lh-normal);
+  }
+  .service-cta {
+    margin-top: auto;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+</style>

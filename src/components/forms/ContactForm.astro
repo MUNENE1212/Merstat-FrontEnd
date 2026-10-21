@@ -1,0 +1,153 @@
+---
+/**
+ * ContactForm — primary service-request form.
+ * Posts to the merstat-api form handler with honeypot + Cloudflare Turnstile.
+ * URL: /contact/ with optional ?intent=&service= query.
+ */
+import { useTranslations, getLangFromUrl } from '../../i18n/utils';
+import { SITE } from '../../utils/site';
+
+const t = useTranslations(getLangFromUrl(Astro.url));
+
+interface Props {
+  services: Array<{ id: string; data: { title: string; shortTitle: string } }>;
+  intent?: string;
+  preselectedService?: string;
+}
+const { services, intent = 'service', preselectedService = '' } = Astro.props;
+const turnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITEKEY ?? '1x00000000000000000000AA';
+---
+
+<!-- Posts to the merstat-api form handler, which enforces the honeypot and
+     the Turnstile token, then 302s back to the action URL. `bot-field` is the
+     honeypot: real users never see it, bots fill every input they find. -->
+<form
+  name="contact"
+  method="POST"
+  action={`/api/forms/contact?intent=${intent}`}
+  class="contact-form"
+>
+  <input type="hidden" name="form-name" value="contact" />
+  <input type="hidden" name="intent" value={intent} />
+  <p class="sr-only">
+    <label>Don't fill this out: <input name="bot-field" tabindex="-1" autocomplete="off" /></label>
+  </p>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="name">{t('form.name')} <span aria-hidden="true">*</span></label>
+      <input id="name" name="name" type="text" autocomplete="name" required />
+    </div>
+    <div class="field">
+      <label for="org">{t('form.org')} <span aria-hidden="true">*</span></label>
+      <input id="org" name="org" type="text" autocomplete="organization" required />
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="email">{t('form.email')} <span aria-hidden="true">*</span></label>
+      <input id="email" name="email" type="email" autocomplete="email" required />
+    </div>
+    <div class="field">
+      <label for="phone">{t('form.phone')}</label>
+      <input id="phone" name="phone" type="tel" autocomplete="tel" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="service">{t('form.service')} <span aria-hidden="true">*</span></label>
+    <select id="service" name="service" required>
+      <option value="">Choose service…</option>
+      {
+        services.map((s) => (
+          <option value={s.id} selected={preselectedService === s.id}>
+            {s.data.title}
+          </option>
+        ))
+      }
+      <option value="other">Other (please specify)</option>
+    </select>
+    <div id="other-group" hidden style="margin-top: var(--space-3);">
+      <label for="service-other">{t('form.other')}</label>
+      <input id="service-other" name="service_other" type="text" />
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns: 1fr 1fr; gap: var(--space-4);">
+    <div class="field">
+      <label for="budget">{t('form.budget')}</label>
+      <input id="budget" name="budget" type="text" placeholder="e.g. USD 50k–100k" />
+    </div>
+    <div class="field">
+      <label for="timeline">{t('form.timeline')}</label>
+      <input id="timeline" name="timeline" type="text" placeholder="e.g. 3 months" />
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="message">{t('form.message')} <span aria-hidden="true">*</span></label>
+    <textarea id="message" name="message" rows="5" required></textarea>
+  </div>
+
+  <div class="field">
+    <label class="checkbox">
+      <input type="checkbox" name="consent" required />
+      <span>{t('form.consent')}</span>
+    </label>
+  </div>
+
+  <!-- Cloudflare Turnstile — REPLACE sitekey in .env before deploy -->
+  <div class="cf-turnstile" data-sitekey={turnstileKey} data-theme="dark"></div>
+
+  <p style="margin-top: var(--space-5); text-align: center;">
+    <button type="submit" class="btn btn--primary btn--lg">
+      <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+      {t('cta.submit')}
+    </button>
+  </p>
+</form>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
+  const select = document.getElementById('service') as HTMLSelectElement | null;
+  const otherGroup = document.getElementById('other-group') as HTMLElement | null;
+  if (select && otherGroup) {
+    select.addEventListener('change', () => {
+      if (select.value === 'other') {
+        otherGroup.hidden = false;
+      } else {
+        otherGroup.hidden = true;
+      }
+    });
+  }
+</script>
+
+<style>
+  .contact-form .field {
+    margin-bottom: var(--space-4);
+  }
+  .contact-form label.checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-weight: 400;
+    color: var(--color-text-muted);
+    font-size: var(--fs-sm);
+  }
+  .contact-form label.checkbox input {
+    width: auto;
+    margin-top: 0.2rem;
+  }
+  .cf-turnstile {
+    margin-top: var(--space-4);
+    display: flex;
+    justify-content: center;
+  }
+  @media (max-width: 700px) {
+    .grid[style*='1fr 1fr'] {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>

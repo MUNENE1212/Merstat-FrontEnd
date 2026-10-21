@@ -1,0 +1,128 @@
+# =============================================================
+# Netlify configuration for Merstat Development Limited
+# https://docs.netlify.com/configure-builds/file-based-configuration/
+# =============================================================
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--prefer-offline --no-audit"
+  # DO NOT add secrets or site-specific values here. Variables set in
+  # netlify.toml take precedence over the Netlify UI, so a placeholder
+  # left here silently wins over the real value you set in the dashboard.
+  # Configure these in Netlify → Site settings → Environment instead:
+  #   PUBLIC_TURNSTILE_SITEKEY, TURNSTILE_SECRET_KEY,
+  #   PUBLIC_PLAUSIBLE_DOMAIN, R2_ACCOUNT_ID, R2_ACCESS_KEY_ID,
+  #   R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_REGION, R2_ENDPOINT, R2_PUBLIC_BASE
+  # The canonical URL is set per-deploy as SITE_URL (see .github/workflows/).
+
+# -------------------------------------------------------------
+# Security headers — applied to every response.
+# https://docs.netlify.com/secure/security_headers/
+# -------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "accelerometer=(), camera=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), payment=(), interest-cohort=()"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://plausible.io https://cloudflareinsights.com https://*.r2.cloudflarestorage.com; frame-src https://challenges.cloudflare.com; worker-src 'self' blob:; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+    X-XSS-Protection = "0"
+    Cross-Origin-Opener-Policy = "same-origin"
+
+# -------------------------------------------------------------
+# Immutable cache for content-hashed assets emitted by Astro.
+# Assets live under /_assets/* by default.
+# -------------------------------------------------------------
+[[headers]]
+  for = "/_assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Admin (Sveltia CMS) — must not be cached at the edge.
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# -------------------------------------------------------------
+# Functions
+# -------------------------------------------------------------
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# -------------------------------------------------------------
+# Redirects
+# Legacy /templates/* paths used by the old static site.
+# Replace after cutover with 301s to the new canonical URLs.
+# -------------------------------------------------------------
+[[redirects]]
+  from = "/templates/*"
+  to = "/:splat"
+  status = 301
+  force = false
+
+[[redirects]]
+  from = "/Results&Methods.html"
+  to = "/results/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/Results&Methods"
+  to = "/results/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/Bookus.html"
+  to = "/contact/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/Bookus"
+  to = "/contact/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/Aboutus.html"
+  to = "/about/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/Aboutus"
+  to = "/about/"
+  status = 301
+  force = true
+
+# i18n prefix redirects
+[[redirects]]
+  from = "/sw/*"
+  to = "/sw/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/fr/*"
+  to = "/fr/:splat"
+  status = 200
+
+# -------------------------------------------------------------
+# Edge / image transforms
+# Netlify Image CDN on by default for `_astro/*` outputs.
+# -------------------------------------------------------------
+[images]
+  remote_images = ["^https://images.unsplash\\.com/.*"]
