@@ -120,27 +120,47 @@ Nameservers **stay** `dns1-4.p03.nsone.net`. Only two records change:
 | `@`   | A     | `69.164.244.165` |
 | `www` | CNAME | `@`              |
 
-In the Shujaa client area: Domains → merstat.org → DNS / Nameservers → edit
-the `@` A record. It currently points at Netlify (`35.157.26.135` and
-`63.176.8.218`) — replace both with a single record above.
+In the Shujaa client area: Domains → merstat.org → DNS / Nameservers.
+
+| Host  | Type  | Value            | State                       |
+| ----- | ----- | ---------------- | --------------------------- |
+| `@`   | A     | `69.164.244.165` | done — live, cert issued    |
+| `www` | CNAME | `@`              | **outstanding — see below** |
+
+The `@` record replaced Netlify's two values (`35.157.26.135`, `63.176.8.218`).
 
 No mail records are affected: merstat.org has no MX, SPF or DKIM today.
 
-### Order of operations
+### `www` — the one record left
 
-The certificate cannot be issued until DNS points at the VPS, so:
+At the time of writing `www.merstat.org` returns **NXDOMAIN**: the old record
+was removed and not replaced. Until it exists, nothing breaks for the apex
+domain, but anyone typing `www.` gets a resolution failure.
 
-1. Get the real secrets in `.env` (above).
-2. Change the A record at Shujaa.
-3. Wait for propagation (`dig +short A merstat.org @1.1.1.1`).
-4. Issue the certificate:
+Add a `www` CNAME pointing at `@`. Once it resolves to the VPS, add it to the
+certificate — the current cert covers `merstat.org` only:
 
 ```bash
-certbot certonly --nginx -d merstat.org -d www.merstat.org
+certbot certonly --webroot -w /var/www/certbot \
+  -d merstat.org -d www.merstat.org --agree-tos --non-interactive
+nginx -t && systemctl reload nginx
 ```
 
-Until step 4 the site is served with a **self-signed placeholder**, so browsers
-show a warning. That is expected and temporary.
+The vhost already has a `www` HTTPS block that 301s to the apex; it just needs
+the certificate to cover the name.
+
+### Certificate
+
+Issued with certbot's webroot plugin against `/var/www/certbot`, which the
+port-80 block serves at `/.well-known/acme-challenge/` **before** the HTTPS
+redirect — without that ordering, renewal silently fails. Valid to 19 Jan 2027,
+`certbot.timer` is enabled and active, and `certbot renew --dry-run` has been
+verified to succeed.
+
+Note: certbot stores lineages as `/etc/letsencrypt/live/<name>`, and the vhost
+reads that path directly. Do not hand-create files there — certbot refuses to
+issue into a `live/` directory it did not create, with
+`CertStorageError: live directory exists`.
 
 ---
 
